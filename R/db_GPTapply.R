@@ -1,14 +1,5 @@
 # GPTapply
 
-f <- function(X, x=10, y=20)
-{
-	sqrt(1)
-}
-
-gptapply(gpdf, uf1, x=3)
-gptapply(gpdf, uf1, x=3, y=7)
-gptapply(gpdf, uf1)
-
 capm_signature <- function()
 {
   return_sig=list(
@@ -43,7 +34,7 @@ capm2 <- function(df, rolling_window_size=100) {
   if (length(outDF) >0) {
     outDF2 <- data.frame(asof_date=index(outDF),coredata(outDF))
     final <- data.frame(ID
-    ,as.Date(outDF2$asof_date)
+    ,as.character(as.Date(outDF2$asof_date))
     ,as.double(outDF2$x2)
     )
    colnames(final) = c("ID","ASOF_DATE","BETA")
@@ -76,7 +67,7 @@ gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NU
 
 	randomName <- getRandomNameList()[1]
 
-	typeName <- sprintf("_gptype_%s", randomName)
+	typeName <- sprintf("gptype_%s", randomName)
 	if (!is.null(output.signature))
 	{
 		typelist_str <- sprintf("CREATE TYPE %s AS (\n", typeName)
@@ -155,13 +146,13 @@ gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NU
 			}
 		}
 	}
-	print(call_udf_params)
-	print(call_udf_inner_params)
+	#print(call_udf_params)
+	#print(call_udf_inner_params)
 	
 
 
     arg_str_array <- strsplit(deparse(args), ", .Names = ")[[1]]
-	print(length(arg_str_array))
+	#print(length(arg_str_array))
 	if (length(arg_str_array) == 1)
 	{
 		listStr = substr(arg_str_array[1], 6, nchar(arg_str_array[1]) - 1)
@@ -177,10 +168,10 @@ gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NU
 
 	#args <- toString(deparse(list(...)))
 	# args -> x=10, y=10
-	print(listStr)
+	#print(listStr)
 
-	funName <- sprintf("_gprfunc_%s", randomName)
-	funBody <- paste("gplocalf <- ",paste(deparse(FUN), collapse="\n"))
+	funName <- sprintf("gprfunc_%s", randomName)
+	funBody <- paste("# container:  plc_r_shared\ngplocalf <- ",paste(deparse(FUN), collapse="\n"))
 	localdf <- sprintf("df <- data.frame(%s)\n", local_data_frame_str)
 	localcall <- sprintf("do.call(gplocalf, list(df, %s))", listStr);
 
@@ -193,10 +184,10 @@ gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NU
 	#}
 	#dataframe <- from_input
 
-	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE 'plr';",
+	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE 'plcontainer';",
 	funName, func_para_str, typeName, funBody, localdf, localcall);
 
-	print(createStmt)
+	#print(createStmt)
 	db.q(createStmt)
 
 	query <- sprintf("SELECT 
@@ -208,8 +199,14 @@ gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NU
 					) foo;", 
 					funName, call_udf_params,call_udf_inner_params, relation_name, INDEX)
 
-	print(query)
+	#print(query)
 	return(db.q(query))
 
 }
+
+gptapply(X=dbDF, "ID", capm2, output.signature=capm_signature, rolling_window_size=100)
+
+
+
+
 
