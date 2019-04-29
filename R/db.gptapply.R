@@ -5,7 +5,7 @@ getRandomNameList <- function(n = 1) {
   paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
 }
 
-gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NULL,
+db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NULL,
 		clear.existing=FALSE, case.sensitive=FALSE,output.distributeOn=NULL,debugger.mode = FALSE, simplify = TRUE, ...)
 {	
 	args <- list(...)
@@ -133,8 +133,11 @@ gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NU
 
 	results <- db.q(query)
 
-	cleanString <- sprintf("DROP FUNCTION %s; DROP TYPE %s", funName, typeName)
+	cleanString <- sprintf("DROP TYPE %s CASCADE;",typeName)
 
-	return(db.q(query))
+	print(cleanString)
+	db.q(cleanString)
+
+	return(results)
 
 }

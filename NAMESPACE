@@ -205,6 +205,8 @@ exportMethods("na.omit")
 
 export("db.q", "db", ".db")
 
+export("db.gptapply")
+
 S3method(vcov, lm.madlib)
 S3method(vcov, lm.madlib.grps)
 S3method(vcov, logregr.madlib.grps)
