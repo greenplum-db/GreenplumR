@@ -120,7 +120,9 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
 	#print(createStmt)
 	db.q(createStmt)
 
-	query <- sprintf("SELECT 
+	if (is.null(output.name))
+	{
+		query <- sprintf("SELECT 
       					(%s(%s)).*
 					FROM (
   						SELECT %s
@@ -128,10 +130,21 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
   						GROUP BY %s
 					) foo;", 
 					funName, call_udf_params,call_udf_inner_params, relation_name, INDEX)
-
+	}
+	else
+	{
+		query <- sprintf("CREATE TABLE %s AS SELECT 
+      					(%s(%s)).*
+					FROM (
+  						SELECT %s
+  						FROM %s 
+  						GROUP BY %s
+					) foo;", 
+					output.name, funName, call_udf_params,call_udf_inner_params, relation_name, INDEX)
+	}
 	#print(query)
 
-	results <- db.q(query)
+	results <- db.q(query, nrows = NULL)
 
 	cleanString <- sprintf("DROP TYPE %s CASCADE;",typeName)
 
