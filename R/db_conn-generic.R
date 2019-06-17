@@ -138,6 +138,34 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
     }
 }
 
+db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib", conn.pkg = "RPostgreSQL",
+       default.schemas = NULL, verbose = TRUE, quick = FALSE)
+{
+    library(ini)
+    ini.config <- read.ini(db.ini)
+    item.config <- ini.config[[dsn.key]]
+    host <- item.config[["host"]]
+    port <- item.config[["port"]]
+    username <- item.config[["username"]]
+    password <- item.config[["password"]]
+    dbname <- item.config[["dbname"]]
+    if (is.null(host) || nchar(host) == 0)
+        host = "localhost"
+    if (is.null(port) || nchar(port) == 0)
+        port = 5432 # default port value defined in db.connect
+    else
+        port = as.integer(port)
+    if (is.null(username) || nchar(username) == 0)
+        username = Sys.getenv("USER")
+    if (is.null(password))
+        password = ""
+    if (is.null(dbname))
+        dbname = username
+    return (db.connect(host, username, dbname, password, port, madlib,
+                      conn.pkg, default.schemas, verbose, quick))
+
+}
+
 ## ----------------------------------------------------------------------
 
 ## show/set the current search path

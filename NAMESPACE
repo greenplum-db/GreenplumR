@@ -11,7 +11,7 @@ importFrom("stats", "AIC", "coef", "contrasts", "deriv", "extractAIC",
 importFrom("utils", "capture.output", "count.fields",
            "install.packages", "installed.packages", "read.table")
 
-export("db.connect", "db.disconnect", "db.list")
+export("db.connect", "db.connect.dsn", "db.disconnect", "db.list")
 
 export ("conn.pkg", "host", "dbname", "user", "dbms",
         "schema.madlib", "madlib.version", "madlib", "lookat")
