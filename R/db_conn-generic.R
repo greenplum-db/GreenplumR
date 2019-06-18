@@ -138,7 +138,7 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
     }
 }
 
-db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib", conn.pkg = "RPostgreSQL",
+db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib",
        default.schemas = NULL, verbose = TRUE, quick = FALSE)
 {
     library(ini)
@@ -149,6 +149,7 @@ db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib", conn
     username <- item.config[["username"]]
     password <- item.config[["password"]]
     dbname <- item.config[["dbname"]]
+    conn.pkg <- item.config[["driver"]]
     if (is.null(host) || nchar(host) == 0)
         host = "localhost"
     if (is.null(port) || nchar(port) == 0)
@@ -161,6 +162,8 @@ db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib", conn
         password = ""
     if (is.null(dbname))
         dbname = username
+    if (is.null(conn.pkg) || nchar(conn.pkg) == 0)
+        conn.pkg = "RPostgreSQL"
     return (db.connect(host, username, dbname, password, port, madlib,
                       conn.pkg, default.schemas, verbose, quick))
 
