@@ -114,7 +114,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
 	localdf <- sprintf("df <- data.frame(%s)\n", local_data_frame_str)
 	localcall <- sprintf("do.call(gplocalf, list(df, %s))", listStr);
 
-	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE 'plcontainer';",
+	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE 'plr';",
 	funName, func_para_str, typeName, funBody, localdf, localcall);
 
 	#print(createStmt)
