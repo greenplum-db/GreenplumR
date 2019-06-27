@@ -122,25 +122,13 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
 
 	if (is.null(output.name))
 	{
-		query <- sprintf("SELECT 
-      					(%s(%s)).*
-					FROM (
-  						SELECT %s
-  						FROM %s 
-  						GROUP BY %s
-					) foo;", 
-					funName, call_udf_params,call_udf_inner_params, relation_name, INDEX)
+		query <- sprintf("WITH a AS (SELECT (%s(%s)) AS b FROM (SELECT %s FROM %s GROUP BY %s) tmptbl) SELECT (b::%s).* FROM a;",
+				funName, call_udf_params, call_udf_inner_params, relation_name, INDEX, typeName)
 	}
 	else
 	{
-		query <- sprintf("CREATE TABLE %s AS SELECT 
-      					(%s(%s)).*
-					FROM (
-  						SELECT %s
-  						FROM %s 
-  						GROUP BY %s
-					) foo;", 
-					output.name, funName, call_udf_params,call_udf_inner_params, relation_name, INDEX)
+		query <- sprintf("CREATE TABLE %s AS WITH a AS (SELECT (%s(%s)) AS b FROM (SELECT %s FROM %s GROUP BY %s) tmptbl) SELECT (b::%s).* FROM a;",
+				output.name, funName, call_udf_params, call_udf_inner_params, relation_name, INDEX, typeName)
 	}
 	#print(query)
 

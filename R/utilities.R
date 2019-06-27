@@ -178,8 +178,9 @@ is.db.data.frame <- function (x)
                  list(table.name=table.name,
                                       table.schema=table.schema)), conn.id)
 
+# smallint[] => int2vecotr
     attrnums <- .db.getQuery(
-        .format("SELECT attrnums
+        .format("SELECT distkey
                  FROM pg_catalog.gp_distribution_policy t
                  WHERE localoid = '<oid>'", list(oid=as.numeric(oid))),
         conn.id = conn.id)
