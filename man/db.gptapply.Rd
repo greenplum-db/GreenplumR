@@ -9,7 +9,7 @@
 }
 \usage{
 db.gptapply(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NULL,
-		clear.existing=FALSE, case.sensitive=FALSE,output.distributeOn=NULL,debugger.mode = FALSE, simplify = TRUE, ...)
+		clear.existing=FALSE, case.sensitive=FALSE,output.distributeOn=NULL,debugger.mode = FALSE, simplify = TRUE, language="plr", ...)
 }
 
 \arguments{
@@ -27,6 +27,7 @@ db.gptapply(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NULL,
 
   \item{FUN}{
     The input function
+  }
 }
 
 \value{
