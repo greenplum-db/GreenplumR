@@ -6,7 +6,7 @@ getRandomNameList <- function(n = 1) {
 }
 
 db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NULL,
-		clear.existing=FALSE, case.sensitive=FALSE,output.distributeOn=NULL,debugger.mode = FALSE, simplify = TRUE, ...)
+		clear.existing=FALSE, case.sensitive=FALSE,output.distributeOn=NULL,debugger.mode = FALSE, simplify = TRUE, language="plr", ...)
 {	
 	args <- list(...)
 
@@ -114,8 +114,8 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
 	localdf <- sprintf("df <- data.frame(%s)\n", local_data_frame_str)
 	localcall <- sprintf("do.call(gplocalf, list(df, %s))", listStr);
 
-	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE 'plr';",
-	funName, func_para_str, typeName, funBody, localdf, localcall);
+	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE '%s';",
+	funName, func_para_str, typeName, funBody, localdf, localcall, language);
 
 	#print(createStmt)
 	db.q(createStmt)
