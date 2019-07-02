@@ -24,7 +24,7 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
                          ", madlib=\"", madlib, "\"",
                          ")", sep = "")
         result <- eval(parse(text = command))
-        .madlib.version.number(result) # record the madlib version number
+        # .madlib.version.number(result) # record the madlib version number
 
         if (!is.null(default.schemas)) {
             res <- .db.getQuery(paste("set search_path =",
@@ -97,7 +97,7 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
         if (verbose)
             cat(paste("Created a connection to database with ID",
                       result, "\n"))
-        .madlib.version.number(result) # record the madlib version number
+        # .madlib.version.number(result) # record the madlib version number
 
         if (!is.null(default.schemas)) {
             res <- .db.getQuery(paste("set search_path =",
@@ -305,10 +305,10 @@ db.list <- function ()
             db <- .get.dbms.str(idx[1])
             cat("DBMS     :   ", db$db.str, db$version.str, "\n")
 
-            if (identical(.localVars$db[[idx[2]]]$madlib.v, numeric(0)))
-                cat("MADlib   :    not installed in schema", schema.madlib(idx[1]), "\n")
-            else
-                cat("MADlib   :    installed in schema", schema.madlib(idx[1]), "\n")
+            # if (identical(.localVars$db[[idx[2]]]$madlib.v, numeric(0)))
+            #     cat("MADlib   :    not installed in schema", schema.madlib(idx[1]), "\n")
+            # else
+            #     cat("MADlib   :    installed in schema", schema.madlib(idx[1]), "\n")
 
             ## pkg <- .localVars$db[[idx[2]]]$conn.pkg
             ## id <- which(tolower(.supported.connections) == pkg)

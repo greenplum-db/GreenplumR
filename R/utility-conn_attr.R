@@ -80,64 +80,64 @@ dbms <- function (conn.id = 1)
 
 ## -----------------------------------------------------------------------
 
-schema.madlib <- function (conn.id = 1)
-{
-    if (!.is.conn.id.valid(conn.id))
-        stop("There is no such connection!")
-    id <- .localVars$conn.id[.localVars$conn.id[,1] == conn.id, 2]
-    .localVars$db[[id]]$madlib
-}
+# schema.madlib <- function (conn.id = 1)
+# {
+#     if (!.is.conn.id.valid(conn.id))
+#         stop("There is no such connection!")
+#     id <- .localVars$conn.id[.localVars$conn.id[,1] == conn.id, 2]
+#     .localVars$db[[id]]$madlib
+# }
 
-## -----------------------------------------------------------------------
+# ## -----------------------------------------------------------------------
 
-madlib.version <- function (conn.id = 1)
-{
-    if (!.is.conn.id.valid(conn.id))
-        stop("There is no such connection!")
-    exists <- .db.getQuery(paste("select count(*) from ",
-                                 "information_schema.routines where ",
-                                 "routine_name = 'version' and ",
-                                 "routine_schema = '", schema.madlib(conn.id),
-                                 "'", sep = ""),
-                           conn.id)[1,1]
-    if (exists == 1)
-        res <- try(.db.getQuery(paste("select ", schema.madlib(conn.id),
-                                      ".version()", sep = ""),
-                                conn.id), silent = TRUE)
-    if (exists == 0 || is(res, .err.class)) {
-        message("\nWarning: Madlib does not exist in database ", dbname(conn.id),
-                " schema ", schema.madlib(conn.id), ".")
-        message("So all functions starting with 'madlib.' will not work.")
-        message("But you can still use other functions with just a few exceptions.")
-        return (character(0))
-    }
-    return (as.character(res))
-}
+# madlib.version <- function (conn.id = 1)
+# {
+#     if (!.is.conn.id.valid(conn.id))
+#         stop("There is no such connection!")
+#     exists <- .db.getQuery(paste("select count(*) from ",
+#                                  "information_schema.routines where ",
+#                                  "routine_name = 'version' and ",
+#                                  "routine_schema = '", schema.madlib(conn.id),
+#                                  "'", sep = ""),
+#                            conn.id)[1,1]
+#     if (exists == 1)
+#         res <- try(.db.getQuery(paste("select ", schema.madlib(conn.id),
+#                                       ".version()", sep = ""),
+#                                 conn.id), silent = TRUE)
+#     if (exists == 0 || is(res, .err.class)) {
+#         message("\nWarning: Madlib does not exist in database ", dbname(conn.id),
+#                 " schema ", schema.madlib(conn.id), ".")
+#         message("So all functions starting with 'madlib.' will not work.")
+#         message("But you can still use other functions with just a few exceptions.")
+#         return (character(0))
+#     }
+#     return (as.character(res))
+# }
 
-## -----------------------------------------------------------------------
+# ## -----------------------------------------------------------------------
 
-madlib <- function (conn.id = 1)
-{
-    madlib.version(conn.id)
-}
+# madlib <- function (conn.id = 1)
+# {
+#     madlib.version(conn.id)
+# }
 
-## -----------------------------------------------------------------------
+# ## -----------------------------------------------------------------------
 
-## extract the version numbers
-.madlib.version.number <- function (conn.id = 1)
-{
-    version <- madlib.version(conn.id)
-    idx <- .localVars$conn.id[.localVars$conn.id[,1] == conn.id, 2]
-    if (identical(version, character(0))) {
-        .localVars$db[[idx]]$madlib.v <- numeric(0)
-        return (numeric(0))
-    } else {
-        num <- gsub("MADlib version: (\\d+\\.\\d+.\\d+).*", "\\1",
-                    version, perl=T)
-        .localVars$db[[idx]]$madlib.v <- num
-        num
-    }
-}
+# ## extract the version numbers
+# .madlib.version.number <- function (conn.id = 1)
+# {
+#     version <- madlib.version(conn.id)
+#     idx <- .localVars$conn.id[.localVars$conn.id[,1] == conn.id, 2]
+#     if (identical(version, character(0))) {
+#         .localVars$db[[idx]]$madlib.v <- numeric(0)
+#         return (numeric(0))
+#     } else {
+#         num <- gsub("MADlib version: (\\d+\\.\\d+.\\d+).*", "\\1",
+#                     version, perl=T)
+#         .localVars$db[[idx]]$madlib.v <- num
+#         num
+#     }
+# }
 
 ## -----------------------------------------------------------------------
 

@@ -163,20 +163,20 @@
 
 ## -----------------------------------------------------------------------
 
-setGeneric ("mean")
+# setGeneric ("mean")
 
-setMethod (
-    "mean",
-    signature(x = "db.obj"),
-    function (x, ...) {
-        madlib <- schema.madlib(conn.id(x))
-        res <- .aggregate(x, "avg", FALSE, .num.types, TRUE,
-                          "double precision", "float8",
-                          array.op = paste(madlib, ".avg", sep = ""))
-        res@.is.agg <- TRUE
-        res
-    },
-    valueClass = "db.Rquery")
+# setMethod (
+#     "mean",
+#     signature(x = "db.obj"),
+#     function (x, ...) {
+#         madlib <- schema.madlib(conn.id(x))
+#         res <- .aggregate(x, "avg", FALSE, .num.types, TRUE,
+#                           "double precision", "float8",
+#                           array.op = paste(madlib, ".avg", sep = ""))
+#         res@.is.agg <- TRUE
+#         res
+#     },
+#     valueClass = "db.Rquery")
 
 ## -----------------------------------------------------------------------
 

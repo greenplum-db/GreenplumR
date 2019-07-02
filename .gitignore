@@ -9,3 +9,4 @@ libadp.a
 *.Rproj*
 *.Rbuildignore*
 .Rproj.user
+.vscode/ipch
