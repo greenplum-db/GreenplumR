@@ -13,7 +13,7 @@
 ## A driver will be automatically created for connection package
 db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = user,
                         password = "", port = 5432,
-                        madlib = "madlib", conn.pkg = "RPostgreSQL",
+                        conn.pkg = "RPostgreSQL",
                         default.schemas = NULL, verbose = TRUE, quick = FALSE)
 {
     if (quick) {
@@ -21,7 +21,6 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
         command <- paste(".db.connect.", tolower(conn.pkg), "(host=\"", host,
                          "\", user=\"", user, "\", dbname=\"", dbname,
                          "\", password=\"", password, "\", port=", port,
-                         ", madlib=\"", madlib, "\"",
                          ")", sep = "")
         result <- eval(parse(text = command))
         # .madlib.version.number(result) # record the madlib version number
@@ -91,7 +90,6 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
         command <- paste(".db.connect.", conn.pkg.name, "(host=\"", host,
                          "\", user=\"", user, "\", dbname=\"", dbname,
                          "\", password=\"", password, "\", port=", port,
-                         ", madlib=\"", madlib, "\"",
                          ")", sep = "")
         result <- eval(parse(text = command))
         if (verbose)
@@ -138,7 +136,7 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
     }
 }
 
-db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib",
+db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini",
        default.schemas = NULL, verbose = TRUE, quick = FALSE)
 {
     library(ini)
@@ -164,7 +162,7 @@ db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini", madlib = "madlib",
         dbname = username
     if (is.null(conn.pkg) || nchar(conn.pkg) == 0)
         conn.pkg = "RPostgreSQL"
-    return (db.connect(host, username, dbname, password, port, madlib,
+    return (db.connect(host, username, dbname, password, port,
                       conn.pkg, default.schemas, verbose, quick))
 
 }
@@ -259,11 +257,12 @@ db.disconnect <- function (conn.id = 1, verbose = TRUE, force = FALSE)
 .get.dbms.str <- function (conn.id)
 {
     dbms.str <- dbms(conn.id = conn.id)
-    if (gsub(".*(HAWQ).*", "\\1", dbms.str, perl=T) == "HAWQ") {
-        db.str <- "HAWQ"
-        version.str <- gsub(".*HAWQ[^\\d]+?([\\d\\.]+?).*", "\\1",
-                            dbms.str, perl=T)
-    } else if (gsub(".*(Greenplum).*", "\\1", dbms.str,
+    # if (gsub(".*(HAWQ).*", "\\1", dbms.str, perl=T) == "HAWQ") {
+    #     db.str <- "HAWQ"
+    #     version.str <- gsub(".*HAWQ[^\\d]+?([\\d\\.]+?).*", "\\1",
+    #                         dbms.str, perl=T)
+    # } else 
+    if (gsub(".*(Greenplum).*", "\\1", dbms.str,
                   perl=T) == "Greenplum") {
         db.str <- "Greenplum"
         version.str <- gsub(".*Greenplum[^\\d]+?([\\d\\.]+?).*",

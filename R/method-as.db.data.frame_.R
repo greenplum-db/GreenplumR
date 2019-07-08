@@ -147,10 +147,10 @@ setMethod (
         table.str <- table.name
     if (! identical(key, character(0))) {
         db <- .get.dbms.str(conn.id)
-        if (db$db.str == "HAWQ") {
-            .restore.warnings(warnings)
-            stop("HAWQ does not support primary keys!")
-        }
+        # if (db$db.str == "HAWQ") {
+        #     .restore.warnings(warnings)
+        #     stop("HAWQ does not support primary keys!")
+        # }
         db.q("alter table ", table.str,
              " add primary key (\"",
              key, "\")", sep = "",

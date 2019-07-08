@@ -162,34 +162,34 @@ arraydb.to.arrayr <- function (str, type = "double", ...)
 
 ## -----------------------------------------------------------------------
 
-.unique.string <- function ()
-{
-    hex_digits <- c(as.character(0:9), letters[1:6])
-    y_digits <- hex_digits[9:12]
+# .unique.string <- function ()
+# {
+#     hex_digits <- c(as.character(0:9), letters[1:6])
+#     y_digits <- hex_digits[9:12]
 
-    s <- paste(
-        paste(sample(hex_digits, 8), collapse=''),
-        paste(sample(hex_digits, 4), collapse=''),
-        ## paste('4', sample(hex_digits, 3), collapse=''),
-        paste(sample(y_digits,1), sample(hex_digits, 3),
-              collapse='', sep = ''),
-        paste(sample(hex_digits, 12), collapse=''), sep='_')
-    s <- paste("madlib_temp_", s, sep = "")
-    s
-}
+#     s <- paste(
+#         paste(sample(hex_digits, 8), collapse=''),
+#         paste(sample(hex_digits, 4), collapse=''),
+#         ## paste('4', sample(hex_digits, 3), collapse=''),
+#         paste(sample(y_digits,1), sample(hex_digits, 3),
+#               collapse='', sep = ''),
+#         paste(sample(hex_digits, 12), collapse=''), sep='_')
+#     s <- paste("madlib_temp_", s, sep = "")
+#     s
+# }
 
-.unique.pattern <- function()
-    "madlib_temp_[a-f\\d]{8}_[a-f\\d]{4}_[a-f\\d]{6}_[a-f\\d]{12}"
+# .unique.pattern <- function()
+#     "madlib_temp_[a-f\\d]{8}_[a-f\\d]{4}_[a-f\\d]{6}_[a-f\\d]{12}"
 
-.unique.string.short <- function ()
-{
-    hex_digits <- c(as.character(0:9), letters[1:6])
-    s <- paste(sample(hex_digits, 4), collapse='')
-    paste("_mad", s, "_", sep = "")
-}
+# .unique.string.short <- function ()
+# {
+#     hex_digits <- c(as.character(0:9), letters[1:6])
+#     s <- paste(sample(hex_digits, 4), collapse='')
+#     paste("_mad", s, "_", sep = "")
+# }
 
-.unique.pattern.short <- function()
-    "_mad[a-f\\d]{4}_"
+# .unique.pattern.short <- function()
+#     "_mad[a-f\\d]{4}_"
 
 ## -----------------------------------------------------------------------
 

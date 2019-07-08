@@ -5,7 +5,7 @@
 
 ## -----------------------------------------------------------------------
 .db.connect.rpostgresql <- function(host, user, dbname, password,
-                                    port, madlib)
+                                    port)
 {
     if (is.null(.localVars$drv$rpostgresql)){
       .localVars$drv$rpostgresql <- DBI::dbDriver("PostgreSQL", max.con=50)
@@ -32,8 +32,7 @@
         port = port,
         dbname = dbname, # database name
         # which R package is used to connected to database
-        conn.pkg = "rpostgresql",
-        madlib = madlib # madlib schema name
+        conn.pkg = "rpostgresql"
         )
 
     .localVars$conn.id <- rbind(.localVars$conn.id,
