@@ -184,9 +184,9 @@ is.db.data.frame <- function (x)
                  FROM pg_catalog.gp_distribution_policy t
                  WHERE localoid = '<oid>'", list(oid=as.numeric(oid))),
         conn.id = conn.id)
-    attrnums <- as.integer(arraydb.to.arrayr(attrnums, "integer"))
-
-    if (is.na(attrnums)) return (NA)
+    attrnums <- arraydb.to.arrayr(attrnums, "integer")
+    if (length(attrnums) <= 0) return (NA)
+    attrnums <- as.integer(attrnums)
 
     cols <- .db.getQuery(
         .format("SELECT attname FROM pg_attribute

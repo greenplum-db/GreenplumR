@@ -14,7 +14,7 @@ importFrom("utils", "capture.output", "count.fields",
 export("db.connect", "db.connect.dsn", "db.disconnect", "db.list")
 
 export ("conn.pkg", "host", "dbname", "user", "dbms",
-        "schema.madlib", "madlib.version", "madlib", "lookat")
+        "lookat")
 
 export ("db.data.frame", "as.db.data.frame")
 
@@ -32,51 +32,10 @@ exportMethods ("print", "show")
 
 export ("is.db.data.frame", "arraydb.to.arrayr")
 
-export("madlib.lda", "perplexity.lda.madlib")
-S3method(predict, lda.madlib)
-
-export ("madlib.lm")
-S3method(summary, lm.madlib)
-S3method(print, lm.madlib)
-S3method(show, lm.madlib)
-S3method(summary, lm.madlib.grps)
-S3method(print, lm.madlib.grps)
-S3method(show, lm.madlib.grps)
-
-export ("madlib.glm")
-S3method(summary, logregr.madlib)
-S3method(print, logregr.madlib)
-S3method(show, logregr.madlib)
-S3method(summary, logregr.madlib.grps)
-S3method(print, logregr.madlib.grps)
-S3method(show, logregr.madlib.grps)
-S3method(summary, glm.madlib)
-S3method(print, glm.madlib)
-S3method(show, glm.madlib)
-S3method(summary, glm.madlib.grps)
-S3method(print, glm.madlib.grps)
-S3method(show, glm.madlib.grps)
-
-S3method(predict, lm.madlib)
-S3method(predict, logregr.madlib)
-S3method(predict, lm.madlib.grps)
-S3method(predict, logregr.madlib.grps)
-S3method(predict, glm.madlib)
-S3method(predict, glm.madlib.grps)
-
-export("madlib.kmeans")
-
-# export sample in the future
-# export ("sample")
-
 exportMethods("$", "[[", "[", "subset")
 
 exportMethods("$<-", "[[<-")
 export("[<-.db.obj")
-
-exportMethods("as.factor")
-
-export("delete", "key", "key<-")
 
 exportMethods("is.factor")
 
@@ -89,9 +48,6 @@ export("conn.eql")
 
 export("eql")
 
-export("madlib.summary")
-S3method(print, summary.madlib)
-S3method(show, summary.madlib)
 
 export("db.objects", "db.existsObject")
 
@@ -101,8 +57,6 @@ export("sd", "var")
 
 exportMethods("sample")
 
-export("generic.cv", "generic.bagging")
-S3method(predict, bagging.model)
 
 exportMethods("colMeans", "colSums")
 export("colAgg", "db.array")
@@ -111,74 +65,13 @@ export("crossprod", "unique")
 export ("PivotalR", "pivotalr")
 S3method(print, none.obj)
 
-exportMethods("scale")
-
-export("groups")
-S3method(groups, lm.madlib)
-S3method(groups, logregr.madlib)
-S3method(groups, lm.madlib.grps)
-S3method(groups, logregr.madlib.grps)
-
 exportMethods("cbind2")
 
-export("cbind")
-
-export("madlib.arima")
-S3method(print, arima.css.madlib)
-S3method(predict, arima.css.madlib)
-S3method(summary, arima.css.madlib)
-S3method(show, arima.css.madlib)
-
-export("clean.madlib.temp")
-
 export("db.default.schemas", "db.search.path")
-
-S3method(residuals, logregr.madlib)
-S3method(residuals, logregr.madlib.grps)
-S3method(residuals, lm.madlib)
-S3method(residuals, lm.madlib.grps)
-S3method(residuals, glm.madlib)
-S3method(residuals, glm.madlib.grps)
-
-S3method(logLik, logregr.madlib)
-S3method(logLik, logregr.madlib.grps)
-S3method(logLik, lm.madlib)
-S3method(logLik, lm.madlib.grps)
-S3method(logLik, glm.madlib)
-S3method(logLik, glm.madlib.grps)
-
-S3method(extractAIC, logregr.madlib)
-S3method(extractAIC, logregr.madlib.grps)
-S3method(extractAIC, lm.madlib)
-S3method(extractAIC, lm.madlib.grps)
-S3method(extractAIC, glm.madlib)
-S3method(extractAIC, glm.madlib.grps)
-
-S3method(AIC, lm.madlib.grps)
-S3method(AIC, logregr.madlib.grps)
-S3method(AIC, glm.madlib.grps)
 
 S3method(as.data.frame, db.table)
 S3method(as.data.frame, db.view)
 S3method(as.data.frame, db.Rquery)
-
-S3method(as.environment, db.obj)
-S3method(with, db.obj)
-
-S3method(coef, logregr.madlib)
-S3method(coef, logregr.madlib.grps)
-S3method(coef, lm.madlib)
-S3method(coef, lm.madlib.grps)
-
-S3method(print, logregr.madlib)
-S3method(print, logregr.madlib.grps)
-S3method(print, lm.madlib)
-S3method(print, lm.madlib.grps)
-
-S3method(predict, logregr.madlib)
-S3method(predict, logregr.madlib.grps)
-S3method(predict, lm.madlib)
-S3method(predict, lm.madlib.grps)
 
 exportMethods("as.integer", "as.character",
               "as.logical", "as.numeric", "as.Date")
@@ -187,10 +80,6 @@ export("as.time", "as.timestamp", "as.interval", "db.date.style")
 
 export("lk", "col.types")
 
-export("madlib.elnet")
-S3method(summary, elnet.madlib)
-S3method(print, elnet.madlib)
-S3method(predict, elnet.madlib)
 
 exportMethods("sin", "cos", "tan", "asin", "acos", "atan",
               "atan2")
@@ -207,41 +96,9 @@ export("db.q", "db", ".db")
 
 export("db.gptapply")
 
-S3method(vcov, lm.madlib)
-S3method(vcov, lm.madlib.grps)
-S3method(vcov, logregr.madlib.grps)
-S3method(vcov, logregr.madlib)
 
 exportMethods("ifelse", "rowSums", "rowMeans")
 
 exportMethods("relevel")
 
-export("margins")
-S3method(margins, lm.madlib)
-S3method(margins, lm.madlib.grps)
-S3method(margins, logregr.madlib)
-S3method(margins, logregr.madlib.grps)
-S3method(print, margins)
-
-export("Vars", "Terms")
-
-export("madlib.rpart")
-S3method(print, dt.madlib)
-S3method(plot, dt.madlib)
-S3method(predict, dt.madlib)
-S3method(text, dt.madlib)
-
-export("madlib.randomForest", "getTree.rf.madlib")
-S3method(print, rf.madlib)
-S3method(predict, rf.madlib)
-
-export ("madlib.svm")
-S3method(predict, svm.madlib.grps)
-S3method(predict, svm.madlib)
-S3method(summary, svm.madlib)
-S3method(show, svm.madlib)
-S3method(print, svm.madlib)
-S3method(summary, svm.madlib.grps)
-S3method(show, svm.madlib.grps)
-S3method(print, svm.madlib.grps)
 

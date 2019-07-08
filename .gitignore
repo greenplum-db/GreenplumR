@@ -10,3 +10,5 @@ libadp.a
 *.Rbuildignore*
 .Rproj.user
 .vscode/ipch
+*.o
+*.so

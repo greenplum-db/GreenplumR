@@ -209,14 +209,14 @@ setMethod (
 
 ## ----------------------------------------------------------------------
 
-setMethod (
-    "delete",
-    signature (x = "bagging.model"),
-    def = function (x) {
-        conn.id <- conn.id(x[[1]]$model)
-        res <- lapply(x, delete)
-        list(res = all(unlist(res)), conn.id = conn.id)
-    })
+# setMethod (
+#     "delete",
+#     signature (x = "bagging.model"),
+#     def = function (x) {
+#         conn.id <- conn.id(x[[1]]$model)
+#         res <- lapply(x, delete)
+#         list(res = all(unlist(res)), conn.id = conn.id)
+#     })
 
 ## ----------------------------------------------------------------------
 
