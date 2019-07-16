@@ -1,17 +1,14 @@
-Package: PivotalR
+Package: GreenplumR
 Type: Package
 Title: A Fast, Easy-to-Use Tool for Manipulating Tables in Databases
-    and a Wrapper of MADlib
-Version: 0.1.19.5
-Date: 2017-2-7
-Author: Predictive Analytics Team at Pivotal Inc.
-    <user@madlb.incubator.apache.org>, with contributions from Data Science Team
-    at Pivotal Inc.
-Maintainer: Rahul Iyer <riyer@pivotal.io>
-Contact: Predictive Analytics Team at Pivotal Inc.
-    <user@madlb.incubator.apache.org>
+Version: 0.0.0.1
+Author: Greenplum Extensions Team at Pivotal Inc.
+	<gpdb-extension@pivotal.io>
+Maintainer: Greenplum Extensions Team <gpdb-extension@pivotal.io>
+Contact: Greenplum Extensions Team at Pivotal Inc.
+	<gpdb-extension@pivotal.io>
 Depends:
-    R (>= 2.14.0),
+    R (>= 3.4.4),
     methods,
     Matrix
 Suggests:
@@ -29,9 +26,7 @@ Description: Provides an R interface for the Pivotal Data stack
     processing. 'PivotalR' provides an R interface to various database
     operations on tables or views. These operations are almost the same as
     the corresponding native R operations. Thus users of R do not need
-    to learn 'SQL' when they operate on objects in the database. It also
-    provides a wrapper for 'Apache MADlib (incubating)', which is an open-
-    source library for parallel and scalable in-database analytics.
+    to learn 'SQL' when they operate on objects in the database.
 License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
