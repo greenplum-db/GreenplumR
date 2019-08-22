@@ -1,12 +1,12 @@
-\name{PivotalR-package}
-\alias{PivotalR-package}
+\name{GreenplumR-package}
+\alias{GreenplumR-package}
 \docType{package}
 \title{
   An R font-end to PostgreSQL and Greenplum database, and wrapper for in-database
   parallel and distributed machine learning open-source library MADlib
 }
 \description{
-  PivotalR is a package that enables users of R, the most popular open source statistical
+  GreenplumR is a package that enables users of R, the most popular open source statistical
 programming language and environment to interact with the Pivotal (Greenplum)
 Database as well as Pivotal HD/HAWQ for Big Data analytics. It does so
 by providing an interface to the operations on tables/views in the
@@ -14,13 +14,13 @@ database. These operations are almost the same as those of
 data.frame. Thus the users of R do not need to learn SQL when they
 operate on the objects in the database. The latest code, along with a
 training video and a quick-start guide, are available at
-\url{https://github.com/pivotalsoftware/PivotalR}.
+\url{https://github.com/pivotalsoftware/GreenplumR}.
 }
 
 \details{
 \tabular{ll}{
 
-Package: \tab PivotalR\cr
+Package: \tab GreenplumR\cr
 
 Type: \tab Package\cr
 
@@ -60,7 +60,7 @@ access of utilizing the powerful analytics and graphics functionalities
 of R. Although the database itself has difficulty in plotting, the
 result can be analyzed and presented beautifully with R.
 
-This current version of PivotalR provides the core R infrastructure and data
+This current version of GreenplumR provides the core R infrastructure and data
 frame functions as well as over 50 analytical functions in R that leverage in-
 database execution. These include
 
@@ -126,7 +126,7 @@ database execution. These include
 \examples{
 \dontrun{
 ## get the help for the package
-help("PivotalR-package")
+help("GreenplumR-package")
 
 ## get help for a function
 help(madlib.lm)

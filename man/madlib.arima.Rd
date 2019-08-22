@@ -228,7 +228,7 @@ method = "CSS", optim.method = "LM", optim.control = list(), ...)
 
 \examples{
 \dontrun{
-library(PivotalR)
+library(GreenplumR)
 %% @test .port Database port number
 %% @test .dbname Database name
 ## set up the database connection

@@ -1,5 +1,5 @@
 # exportPattern("^[^\\.]")
-useDynLib(PivotalR)
+useDynLib(GreenplumR)
 import(methods, Matrix)
 
 importFrom("grDevices", "col2rgb")
@@ -62,7 +62,7 @@ exportMethods("colMeans", "colSums")
 export("colAgg", "db.array")
 export("crossprod", "unique")
 # export("exp", "log", "log10", "abs", "factorial", "sign", "sqrt")
-export ("PivotalR", "pivotalr")
+export ("GreenplumR", "pivotalr")
 S3method(print, none.obj)
 
 exportMethods("cbind2")

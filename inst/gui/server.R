@@ -1,7 +1,7 @@
 
 .get.connection.list <- function ()
 {
-    id <- PivotalR:::.localVars$conn.id[,1]
+    id <- GreenplumR:::.localVars$conn.id[,1]
     as.character(id)
 }
 
@@ -12,11 +12,11 @@
     if (identical(conn.id, integer(0)))
         data.frame(Host = "", User = "", Database = "", DBMS = "")
     else {
-        idx <- PivotalR:::.localVars$conn.id[PivotalR:::.localVars$conn.id[,1] == conn.id, 2]
-        db <- PivotalR:::.get.dbms.str(conn.id)
-        data.frame(Host = PivotalR:::.localVars$db[[idx]]$host,
-                   User = PivotalR:::.localVars$db[[idx]]$user,
-                   Database = PivotalR:::.localVars$db[[idx]]$dbname,
+        idx <- GreenplumR:::.localVars$conn.id[GreenplumR:::.localVars$conn.id[,1] == conn.id, 2]
+        db <- GreenplumR:::.get.dbms.str(conn.id)
+        data.frame(Host = GreenplumR:::.localVars$db[[idx]]$host,
+                   User = GreenplumR:::.localVars$db[[idx]]$user,
+                   Database = GreenplumR:::.localVars$db[[idx]]$dbname,
                    DBMS = paste(db$db.str, db$version.str))
     }
 }
@@ -33,7 +33,7 @@ shinyServer(function(input, output, session) {
     db.obj.list <- reactive({
         id <- conInput()
         if (identical(id, integer(0)) ||
-            !PivotalR:::.is.conn.id.valid(id))
+            !GreenplumR:::.is.conn.id.valid(id))
             ""
         else
             db.objects(conn.id = id)
@@ -158,7 +158,7 @@ shinyServer(function(input, output, session) {
                 res <- try(madlib.glm(formula(f), data = x,
                                       family = "binomial"),
                            silent = TRUE)
-            if (is(res, PivotalR:::.err.class))
+            if (is(res, GreenplumR:::.err.class))
                 return (empty.res)
             else
                 res

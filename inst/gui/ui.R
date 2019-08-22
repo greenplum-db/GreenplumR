@@ -3,7 +3,7 @@
 shinyUI(pageWithSidebar(
 
     ## Application title
-    headerPanel("PivotalR"),
+    headerPanel("GreenplumR"),
     
     ## Sidebar with controls to select the variable to plot against mpg
     ## and to specify whether outliers should be included

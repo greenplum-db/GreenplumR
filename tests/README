@@ -1,19 +1,19 @@
-Introduction to PivotalR testing
+Introduction to GreenplumR testing
 
-PivotalR tests are built upon the 'testthat' package by Hadley Wickham [1].
+GreenplumR tests are built upon the 'testthat' package by Hadley Wickham [1].
 Instructions for using this package can be found in the
 [Testing](http://r-pkgs.had.co.nz/tests.html) chapter of
 [R packages](http://r-pkgs.had.co.nz/).
 
 Given below is the quick-start guide:
 
-- Most PivotalR tests require a database connected on localhost. The tests
+- Most GreenplumR tests require a database connected on localhost. The tests
 require two variables set to ensure connection to local database:
     - `pivotalr_dbname`: Name of the test database
     - `pivotalr_port`: Port of the test database
 
 - Use devtools::test() to run the tests. This function needs to be called from the
-root folder of PivotalR. Alternatively, `pkg` parameter can be set to the exact
+root folder of GreenplumR. Alternatively, `pkg` parameter can be set to the exact
 location of the package and `filter` parameter can be used to run specific tests.
 See the testthat documentation for details on the parameters.
 
@@ -21,13 +21,13 @@ See the testthat documentation for details on the parameters.
 folder that start with the specific text `test`.
 
 -  In the tests, one can use the data sets "abalone" and "null.data",
-which are included in the PivotalR package. Please refer to the user
+which are included in the GreenplumR package. Please refer to the user
 manual for the details about these two data sets.
 
 
-- Additional data set files in the tests should by placed outside of PivotalR
+- Additional data set files in the tests should by placed outside of GreenplumR
   package, and the path of the data sets be passed into the tests as an
   environment parameter. This is enforced since CRAN has a size
   limitation for the package size. In general, it is not recommended to
-  use additional data files within PivotalR, rather place data in the
-  database and let PivotalR access it through DB API.
+  use additional data files within GreenplumR, rather place data in the
+  database and let GreenplumR access it through DB API.

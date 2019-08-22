@@ -220,7 +220,7 @@ madlib.lm(formula, data, na.action = NULL, hetero = FALSE, na.as.level = FALSE, 
   use \code{|} to add their own functionalities into formula
   object. However, \code{|} has different meanings and usages
   in different packages. The user must be careful that usage of \code{|} in
-  \code{\link{PivotalR-package}} may not be the same as the others.
+  \code{\link{GreenplumR-package}} may not be the same as the others.
 }
 
 \seealso{
