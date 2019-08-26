@@ -3,7 +3,7 @@
 ## start shiny GUI
 ## -----------------------------------------------------------------------
 
-PivotalR <- function ()
+GreenplumR <- function ()
 {
     if (length(.localVars$db) == 0)
         stop("No database connections! ",
@@ -19,12 +19,12 @@ PivotalR <- function ()
         if (!("shiny" %in% .get.installed.pkgs()))
             stop("The package shiny could not be installed!")
     }
-    ## PivotalR's installation path
+    ## GreenplumR's installation path
     ## .localVars$pkg.path <- path.package(.this.pkg.name)
     ## gui folder installation path
     gui.dir <- paste(.localVars$pkg.path, "/gui", sep = "")
 
-    message("\nWelcome to PivotalR GUI ...\n")
+    message("\nWelcome to GreenplumR GUI ...\n")
     message("Press Ctrl + c to stop.")
     shiny::runApp(gui.dir)
 }
@@ -33,7 +33,7 @@ PivotalR <- function ()
 
 pivotalr <- function ()
 {
-    PivotalR()
+    GreenplumR()
 }
 
 ## -----------------------------------------------------------------------

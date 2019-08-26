@@ -1,24 +1,24 @@
 \name{GUI}
-\alias{PivotalR}
+\alias{GreenplumR}
 \alias{pivotalr}
 
 \title{
-  Graphical interface for PivotalR based upon shiny
+  Graphical interface for GreenplumR based upon shiny
 }
 
 \description{
   This function launches a shiny server which provides a graphical
-  interface for PivotalR. Press Ctrl+c to stop the shiny server.
+  interface for GreenplumR. Press Ctrl+c to stop the shiny server.
 }
 
 \usage{
-PivotalR()
+GreenplumR()
 
 pivotalr()
 }
 
 \details{
-  The graphical interface for PivotalR is very easy to use. Just follow
+  The graphical interface for GreenplumR is very easy to use. Just follow
   the instructions on screen. The GUI is still at a very early stage and
   has only very limited functionality. We will add more functionalities
   into the GUI in the future versions.

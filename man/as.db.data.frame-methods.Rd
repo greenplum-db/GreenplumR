@@ -12,7 +12,7 @@
 
 \description{
   Methods for function \code{as.db.data.frame} in package
-  \pkg{PivotalR}. When \code{x} is a file name or \code{data.frame}, the
+  \pkg{GreenplumR}. When \code{x} is a file name or \code{data.frame}, the
   method puts the data into a table in the database. When \code{x} is a
   \code{\linkS4class{db.Rquery}} object, it is converted into a
   table. When \code{x} is a \code{\linkS4class{db.data.frame}} object, a

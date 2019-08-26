@@ -30,7 +30,7 @@
 }
 
 \seealso{
-    \code{\link{PivotalR}} launches the GUI for PivotalR.
+    \code{\link{GreenplumR}} launches the GUI for GreenplumR.
 }
 
 \keyword{IO}

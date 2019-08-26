@@ -59,7 +59,7 @@ test <- function(tests.path = "tests", man.path = NULL, filter = NULL,
 
     if (test_path == "")
         stop("You need to use --install-tests option to install ",
-             "the tests when you are installing PivotalR!")
+             "the tests when you are installing GreenplumR!")
 
     ## connections before testing
     ## so that we can close all un-closed connections after testing

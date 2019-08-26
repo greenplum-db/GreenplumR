@@ -136,7 +136,7 @@ All parameters have been explained above. The only one left is \code{verbose}.
 }
 
 \note{
-  The coordinate descent (\code{method = "cd"}) algorithm is currently only available in PivotalR. In the future, we will also implement it in MADlib. The idea is to do some part of the computation in memory. Due to the memory usage liimitation of the database, this method cannot handle the fitting where the number of features is too large (a couple of thousands).
+  The coordinate descent (\code{method = "cd"}) algorithm is currently only available in GreenplumR. In the future, we will also implement it in MADlib. The idea is to do some part of the computation in memory. Due to the memory usage liimitation of the database, this method cannot handle the fitting where the number of features is too large (a couple of thousands).
 }
 
 \details{
