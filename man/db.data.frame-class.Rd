@@ -118,7 +118,7 @@ Class \code{\linkS4class{db.obj}}, directly.
 \code{\link{sort,db.obj-method}}, \code{\link{subset,db.obj-method}},
 \code{\link{Arith methods}}, \code{\link{Compare methods}},
 \code{\link{Logical methods}}, \code{\link{Extraction methods}},
-\code{\link{Replacement methods}}}
+\code{\link{Replacement methods}}
 }
 
 \author{
