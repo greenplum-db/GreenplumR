@@ -8,7 +8,7 @@
 \description{
   List all the currently active connections with their information
   including the connection ID, host, user, database, DBMS (database
-  management system), MADlib schema name in the database, and the R
+  management system), and the R
   package name used to connect to the database.
 }
 \usage{

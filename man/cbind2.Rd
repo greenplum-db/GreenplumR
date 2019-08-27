@@ -58,10 +58,8 @@ cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 delete('abalone', conn.id = cid)
 x <- as.db.data.frame(abalone, 'abalone', conn.id = cid, verbose = FALSE)
 
-fit <- madlib.lm(rings ~ . - id - sex, data = x)
-
 ## create a db.Rquery object that has two columns
-z <- cbind(x$rings, predict(fit, x))
+z <- cbind(x$rings, x$length)
 
 ## plot prediction v.s. real value
 plot(lookat(z, 100))
