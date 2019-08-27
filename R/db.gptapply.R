@@ -16,23 +16,11 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
 	if (!is.null(output.signature))
 	{
 		typelist_str <- sprintf("CREATE TYPE %s AS (\n", typeName)
-		typelist <- output.signature()
-		for( i in 1:length(typelist))
-		{
-			if (i < length(typelist))
-			{
-				typelist_str <- paste(typelist_str, names(typelist)[i], " ", typelist[[i]], ",\n", sep="")
-			}
-			else
-			{
-				typelist_str <- paste(typelist_str, names(typelist)[i], " ", typelist[[i]], "\n", sep="")
-			}
-			
-		}
-		typelist_str <- paste(typelist_str, ");", sep="")
+		typelist <- .simplify.signature(output.signature)
+		fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
+		typelist_str <- paste(typelist_str, fieldStr, "\n);", sep="")
 		print(typelist_str)
 		db.q(typelist_str)
-
 	}
 	
 	# generate function parameter str
@@ -94,25 +82,14 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature
 	#print(call_udf_params)
 	#print(call_udf_inner_params)
 	
-  arg_str_array <- strsplit(deparse(args), ", .Names = ")[[1]]
-	#print(length(arg_str_array))
-	if (length(arg_str_array) == 1)
-	{
-		listStr = substr(arg_str_array[1], 6, nchar(arg_str_array[1]) - 1)
-	}
-	else if (length(arg_str_array) == 2)
-	{
-	   listStr = substr(arg_str_array[1], 16, nchar(arg_str_array[1]) - 1)
-	}
-	else
-	{
-		stop("The functon input argument must not inlcude '.Names'")
-	}
+	listStr <- .extract.param.list(args)
+	if (nchar(listStr)>0)
+		listStr <- paste(", ", listStr, sep="")
 
 	funName <- sprintf("gprfunc_%s", randomName)
 	funBody <- paste("# container:  plc_r_shared\ngplocalf <- ",paste(deparse(FUN), collapse="\n"))
 	localdf <- sprintf("df <- data.frame(%s)\n", local_data_frame_str)
-	localcall <- sprintf("do.call(gplocalf, list(df, %s))", listStr);
+	localcall <- sprintf("do.call(gplocalf, list(df %s))", listStr);
 
 	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE '%s';",
 	funName, func_para_str, typeName, funBody, localdf, localcall, language);
