@@ -10,7 +10,9 @@ Contact: Greenplum Extensions Team at Pivotal Inc.
 Depends:
     R (>= 3.4.4),
     methods,
-    Matrix
+    Matrix,
+    ini,
+    shiny
 Suggests:
     DBI,
     RPostgreSQL,

@@ -4,7 +4,7 @@
     if (is.null(signature) || is.list(signature))
         return (signature)
     if (is.function(signature))
-        return (simplify.signature(signature()))
+        return (.simplify.signature(signature()))
     if (is.db.data.frame(signature))
         stop("type of signature is db.data.frame, not supported now")
 
@@ -97,7 +97,7 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
     else
     {
         query <- sprintf("CREATE TABLE %s AS WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
-                output.name, funName, param_list_str, param_list_str, relation_name, typeName, .distribute.key(distributeOn))
+                output.name, funName, param_list_str, param_list_str, relation_name, typeName, .distribute.str(output.distributeOn))
     }
     print(query)
 

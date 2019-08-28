@@ -10,6 +10,8 @@ importFrom("stats", "AIC", "coef", "contrasts", "deriv", "extractAIC",
            "setNames", "terms", "vcov")
 importFrom("utils", "capture.output", "count.fields",
            "install.packages", "installed.packages", "read.table")
+importFrom("ini", "read.ini")
+importFrom("shiny", "runApp")
 
 export("db.connect", "db.connect.dsn", "db.disconnect", "db.list")
 
@@ -36,6 +38,7 @@ exportMethods("$", "[[", "[", "subset")
 
 exportMethods("$<-", "[[<-")
 export("[<-.db.obj")
+S3method("[<-", db.obj)
 
 exportMethods("is.factor")
 
