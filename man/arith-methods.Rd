@@ -117,8 +117,6 @@ x$area <- x$length * x$height # add a new column
 
 lk(x$area, 10) # view the actual values computed in database
 
-fit <- madlib.lm(rings ~ area, data = x)
-
 ## ----------------------------------------------------------------------
 
 db.disconnect(cid, verbose = FALSE)

@@ -87,9 +87,6 @@ lk(by(x[,-c(1,2)], x[,"sex"], mean)) # the same
 ## The return type of FUN is not db.obj
 dat <- x
 
-## Fit linear model to each group of data
-by(dat, dat$sex, function(x) madlib.lm(rings ~ . - id - sex, data = x))
-
 db.disconnect(cid, verbose = FALSE)
 }
 }

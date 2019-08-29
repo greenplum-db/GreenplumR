@@ -6,9 +6,7 @@
 
 \description{
   Convert one column of a \code{db.obj} object into a categorical
-  variable. When \code{\link{madlib.lm}} or \code{\link{madlib.glm}} are
-  applied onto a \code{db.obj} with categorical columns, dummy columns
-  will be created and fitted. The reference level for regressions can be selected using \code{relevel}.
+  variable. The reference level for regressions can be selected using \code{relevel}.
 }
 
 \usage{
@@ -42,8 +40,6 @@
 }
 
 \seealso{
-  \code{\link{madlib.lm}} and \code{\link{madlib.glm}} can fit
-  categorical variables
 
   When \code{\link{as.db.data.frame}} creates a table/view, it can create dummy variables for a
   categorical variable.
@@ -66,24 +62,11 @@ x <- as.db.data.frame(abalone, conn.id = cid, verbose = FALSE)
 ## set sex to be a categorical variable
 x$sex <- as.factor(x$sex)
 
-fit1 <- madlib.lm(rings ~ . - id, data = x) # linear regression
-
-fit2 <- madlib.glm(rings < 10 ~ . - id, data = x, family = "binomial") # logistic regression
-
 ## another temporary table
 z <- as.db.data.frame(abalone, conn.id = cid, verbose = FALSE)
 
-## specify factor during fitting
-fit3 <- madlib.lm(rings ~ as.factor(sex) + length + diameter, data = z)
-
-## as.factor is automatically used onto text column
-## so as.factor is not necessary
-fit4 <- madlib.glm(rings < 10 ~ sex + length + diameter, data
-= z, family = "binomial")
-
 ## using relevel to change the reference level
 x$sex <- relevel(x$sex, ref = "M")
-madlib.lm(rings ~ . - id, data = x) # use "M" as the reference level
 
 db.disconnect(cid, verbose = FALSE)
 }

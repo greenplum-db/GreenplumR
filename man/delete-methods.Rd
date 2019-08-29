@@ -4,20 +4,7 @@
 \alias{delete,db.data.frame-method}
 \alias{delete,db.Rquery-method}
 \alias{delete,character-method}
-\alias{delete,arima.css.madlib-method}
-\alias{delete,summary.madlib-method}
-\alias{delete,lm.madlib-method}
-\alias{delete,lm.madlib.grps-method}
-\alias{delete,logregr.madlib-method}
-\alias{delete,logregr.madlib.grps-method}
-
 \alias{delete,bagging.model-method}
-
-\alias{delete,elnet.madlib-method}
-
-\alias{delete,dt.madlib-method}
-
-\alias{delete,dt.madlib.grps-method}
 
 \title{ Safely delete a \code{db.obj} object or a table/view in the database }
 
@@ -38,25 +25,7 @@
 \S4method{delete}{character}(x, conn.id = 1, is.temp = FALSE, cascade =
 FALSE)
 
-\S4method{delete}{arima.css.madlib}(x)
-
-\S4method{delete}{summary.madlib}(x)
-
-\S4method{delete}{lm.madlib}(x)
-
-\S4method{delete}{lm.madlib.grps}(x)
-
-\S4method{delete}{logregr.madlib}(x)
-
-\S4method{delete}{logregr.madlib.grps}(x)
-
 \S4method{delete}{bagging.model}(x)
-
-\S4method{delete}{elnet.madlib}(x)
-
-\S4method{delete}{dt.madlib}(x)
-
-\S4method{delete}{dt.madlib.grps}(x)
 
 }
 
@@ -71,34 +40,11 @@ FALSE)
     object, which represents some operations on an existing
     \code{db.data.frame} object;
 
-    Or a string, the table/view name to delete in the database;
-
-    Or an object which is the result of \code{\link{madlib.arima}}. In the
+    Or a string, the table/view name to delete in the database. In the
     this case, the result model tables wrapped by \code{model},
     \code{residuals} and \code{statistics} will be deleted.
 
-    Or an object which is the result of \code{\link{madlib.summary}} (a
-    \code{summary.madlib} object). In this case the result table created
-    in the database and wrapped by the attribute
-    \code{"summary"} will be deleted.
-
-    Or an object which is the result of \code{\link{madlib.lm}} (a
-    \code{lm.madlib} or \code{lm.madlib.grps} object). In this
-    case, the result model table wrapped by \code{model} will be
-    deleted.
-
-    Or an object which is the result of \code{\link{madlib.glm}} with
-    \code{family = "binomial"} (a
-    \code{logregr.madlib} or \code{logregr.madlib.grps} object). In this
-    case, the result model table wrapped by \code{model} will be
-    deleted.
-
-    Or an object which is the result of \code{\link{generic.bagging}}.         In this case, all result model tables will be deleted.
-
-Or an object which is the result of \code{\link{madlib.elnet}}. In this casem all result model tables will be deleted.
-
-Or an object which is the result of \code{\link{madlib.rpart}}. All result
-tables will be deleted.
+    Or an object which is the result of \code{\link{generic.bagging}}.
 
 }
 
@@ -147,10 +93,6 @@ tables will be deleted.
 
   \code{\link{as.db.data.frame}} creates a \code{db.data.frame} from a
   \code{data.frame}, a data file or a \code{db.Rquery}.
-
-  \code{\link{madlib.lm}}, \code{\link{madlib.glm}},
-  \code{\link{madlib.summary}}, \code{\link{madlib.arima}} are MADlib
-  wrapper functions whose results can be safely deleted by this function.
 }
 
 \examples{

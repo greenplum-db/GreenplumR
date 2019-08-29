@@ -35,10 +35,6 @@
   Maintainer: Frank McQuillan, Pivotal Inc. \email{fmcquillan@pivotal.io}
 }
 
-\seealso{
-  \code{\link{madlib.lm}}, \code{\link{madlib.glm}} for linear and logistic regressions.
-}
-
 \examples{
 \dontrun{
 %% @test .port Database port number
@@ -49,8 +45,6 @@ cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 
 delete("abalone", conn.id = cid)
 dat <- as.db.data.frame(abalone, "abalone", conn.id = cid, verbose = FALSE)
-
-madlib.lm(rings ~ . - sex - id, data = dat, na.action = na.omit)
 
 db.disconnect(cid, verbose = FALSE)
 }

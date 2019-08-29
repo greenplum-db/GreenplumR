@@ -2,19 +2,18 @@
 \alias{GreenplumR-package}
 \docType{package}
 \title{
-  An R font-end to PostgreSQL and Greenplum database, and wrapper for in-database
-  parallel and distributed machine learning open-source library MADlib
+  An R client of PL/Container and PL/R to Greenplum database.
 }
 \description{
   GreenplumR is a package that enables users of R, the most popular open source statistical
 programming language and environment to interact with the Pivotal (Greenplum)
-Database as well as Pivotal HD/HAWQ for Big Data analytics. It does so
+Database for Big Data analytics. It does so
 by providing an interface to the operations on tables/views in the
 database. These operations are almost the same as those of
 data.frame. Thus the users of R do not need to learn SQL when they
 operate on the objects in the database. The latest code, along with a
 training video and a quick-start guide, are available at
-\url{https://github.com/pivotalsoftware/GreenplumR}.
+\url{https://github.com/greenplum-db/GreenplumR}.
 }
 
 \details{
@@ -40,13 +39,7 @@ analytics libraries to operate on big data sets that would otherwise not fit in
 R memory - all this without having to learn SQL because the package provides an
 interface that they are familiar with.
 
-The package also provides a wrapper for MADlib. MADlib is an open-source
-library for scalable in-database analytics. It provides data-parallel
-implementations of mathematical, statistical and machine-learning
-algorithms for structured and unstructured data. The number of machine
-learning algorithms that MADlib covers is quickly increasing.
-
-As an R front-end to the PostgreSQL-like databases, this package
+As an R client to the PL/Container and PL/R, this package
 minimizes the amount of data transferred between the database and R. All
 the big data is stored in the database. The
 user enters their familiar R syntax, and the package translates it into
@@ -74,7 +67,6 @@ database execution. These include
 
 * Transformations - as.factor, null replacement
 
-* Algorithms - linear regression and logistic regression wrappers for MADlib
 }
 
 \note{
@@ -87,9 +79,7 @@ database execution. These include
   effectively. It is mostly limited to explicitly parallel jobs. And for
   the end user, it is still a SQL interface.
 
-  This package does not require any knowledge of SQL, and it works for
-  both explicitly and implicitly parallel jobs by employing the
-  open-source MADlib library. It is much more scalable.
+  This package does not require any knowledge of SQL. It is much more scalable.
   And for the end user, it is a pure R
   interface with the conventional R syntax.
 }
@@ -101,40 +91,16 @@ database execution. These include
 
   Maintainer: Frank McQuillan, Pivotal Inc. \email{fmcquillan@pivotal.io}
 }
-\references{
-  [1] MADlib website, \url{http://madlib.incubator.apache.org}
-
-  [2] MADlib user docs, \url{http://madlib.incubator.apache.org/docs/latest/}
-
-  [3] MADlib Wiki page, \url{ https://cwiki.apache.org/confluence/display/MADLIB}
-
-  [4] MADlib contribution guide,
-  \url{https://cwiki.apache.org/confluence/display/MADLIB/Contribution+Guidelines}
-
-  [5] MADlib on GitHub, \url{https://github.com/apache/incubator-madlib}
-}
-
-\seealso{
-  \code{\link{madlib.lm}} Linear regression
-
-  \code{\link{madlib.glm}} Linear, logistic and multinomial logistic
-  regressions
-
-  \code{\link{madlib.summary}} summary of a table in the database.
-}
 
 \examples{
 \dontrun{
 ## get the help for the package
 help("GreenplumR-package")
 
-## get help for a function
-help(madlib.lm)
-
 ## create multiple connections to different databases
 db.connect(port = 5433) # connection 1, use default values for the parameters
-db.connect(dbname = "test", user = "qianh1", password = "", host =
-"remote.machine.com", madlib = "madlib07", port = 5432) # connection 2
+db.connect(dbname = "test", user = "user1", password = "", host =
+"remote.machine.com", port = 5432) # connection 2
 
 db.list() # list the info for all the connections
 
@@ -156,70 +122,12 @@ dim(x) # dimension of the data table
 
 names(x) # column names of the data table
 
-madlib.summary(x) # look at a summary for each column
-
 lk(x, 20) # look at a sample of the data
 
 ## look at a sample sorted by id column
 lookat(sort(x, decreasing = FALSE, x$id), 20)
 
 lookat(sort(x, FALSE, NULL), 20) # look at a sample ordered randomly
-
-## linear regression Examples --------
-
-## fit one different model to each group of data with the same sex
-fit1 <- madlib.lm(rings ~ . - id | sex, data = x)
-
-fit1 # view the result
-
-lookat(mean((x$rings - predict(fit1, x))^2)) # mean square error
-
-## plot the predicted values v.s. the true values
-ap <- x$rings # true values
-ap$pred <- predict(fit1, x) # add a column which is the predicted values
-
-## If the data set is very big, you do not want to load all the
-## data points into R and plot. We can just plot a random sample.
-random.sample <- lk(sort(ap, FALSE, "random"), 1000) # sort randomly
-
-plot(random.sample) # plot a random sample
-
-## fit a single model to all data treating sex as a categorical variable ---------
-y <- x # make a copy, y is now a db.data.frame object
-y$sex <- as.factor(y$sex) # y becomes a db.Rquery object now
-fit2 <- madlib.lm(rings ~ . - id, data = y)
-
-fit2 # view the result
-
-lookat(mean((y$rings - predict(fit2, y))^2)) # mean square error
-
-## logistic regression Examples --------
-
-## fit one different model to each group of data with the same sex
-fit3 <- madlib.glm(rings < 10 ~ . - id | sex, data = x, family = "binomial")
-
-fit3 # view the result
-
-## the percentage of correct prediction
-lookat(mean((x$rings < 10) == predict(fit3, x)))
-
-## fit a single model to all data treating sex as a categorical variable ----------
-y <- x # make a copy, y is now a db.data.frame object
-y$sex <- as.factor(y$sex) # y becomes a db.Rquery object now
-fit4 <- madlib.glm(rings < 10 ~ . - id, data = y, family = "binomial")
-
-fit4 # view the result
-
-## the percentage of correct prediction
-lookat(mean((y$rings < 10) == predict(fit4, y)))
-
-## Group by Examples --------
-
-## mean value of each column except the "id" column
-lk(by(x[,-1], x$sex, mean))
-
-## standard deviation of each column except the "id" column
-lookat(by(x[,-1], x$sex, sd))
 
 ## Merge Examples --------
 
@@ -252,22 +160,6 @@ x <- as.db.data.frame(null.data, "null_data")
 dim(x)
 
 names(x)
-
-## ERROR, because of NULL values
-fit <- madlib.lm(sf_mrtg_pct_assets ~ ., data = x)
-
-## remove NULL values
-y <- x # make a copy
-for (i in 1:10) y <- y[!is.na(y[i]),]
-
-dim(y)
-
-fit <- madlib.lm(sf_mrtg_pct_assets ~ ., data = y)
-
-fit
-
-## Or we can replace all NULL values
-x[is.na(x)] <- 45
 }
 }
 
