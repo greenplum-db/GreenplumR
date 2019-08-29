@@ -110,9 +110,7 @@ NOT recommended to directly manipulate the internal slots of these objects.
       for a factor column, we add a random string in the names of the
       dummy columns to avoid naming conflicts. So a factor column's
       \code{.factor.suffix} is a random string, otherwise it is just an
-      empty string. This is not to be used by the normal users. It is
-      used only the MADlib wrapper functions that support categorical
-      variables.
+      empty string. This is not to be used by the normal users.
     }
 
     \item{\code{.factor.ref}:}{

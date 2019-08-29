@@ -57,11 +57,11 @@ db.default.schemas(conn.id = 1, set = NULL)
 ## set up the database connection
 ## Assume that .port is port number and .dbname is the database name
 cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE, default.schemas =
-"public,madlib")
+"public")
 
 db.search.path()
 
-db.search.path(set = "public,madlibtestdata")
+db.search.path(set = "public")
 
 db.disconnect(cid, verbose = FALSE)
 }

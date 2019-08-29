@@ -27,11 +27,6 @@ loaded whenever it is used.}
   \code{\link{as.db.data.frame}}, one can put the data set into the
   connected database. All the \code{NA} values will be converted into
   \code{NULL} values.
-
-  The MADlib wrapper functions like \code{\link{madlib.lm}} and
-  \code{link{madlib.glm}} will throw an error if there are \code{NULL}
-  values in the data. So one needs to clean up the data before using the
-  regression functions supplied by MADlib.
 }
 
 \examples{
@@ -46,11 +41,6 @@ cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 delete("null_data", conn.id = cid)
 x <- as.db.data.frame(null.data, "null_data", conn.id = cid, verbose = FALSE)
 
-## ERROR, because of NULL values
-fit <- madlib.lm(sf_mrtg_pct_assets ~ ris_asset + lncrcd + lnauto +
-                 lnconoth + lnconrp + intmsrfv + lnrenr1a + lnrenr2a +
-                 lnrenr3a, data = x)
-
 ## select columns
 y <- x[,c("sf_mrtg_pct_assets","ris_asset", "lncrcd","lnauto",
           "lnconoth","lnconrp","intmsrfv","lnrenr1a","lnrenr2a",
@@ -62,10 +52,6 @@ dim(y)
 for (i in 1:10) y <- y[!is.na(y[i]),]
 
 dim(y)
-
-fit <- madlib.lm(sf_mrtg_pct_assets ~ ., data = y)
-
-fit
 
 db.disconnect(cid, verbose = FALSE)
 }

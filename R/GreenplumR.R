@@ -31,7 +31,7 @@ GreenplumR <- function ()
 
 ## -----------------------------------------------------------------------
 
-pivotalr <- function ()
+greenplumr <- function ()
 {
     GreenplumR()
 }

@@ -7,9 +7,6 @@
 \alias{dbms}
 \alias{conn}
 \alias{port}
-\alias{madlib}
-\alias{madlib.version}
-\alias{schema.madlib}
 \alias{conn.pkg}
 
 \title{
@@ -19,8 +16,7 @@
 \description{
   For a given database connection, these functions return the user name,
   host, database name, info about database management system,
-  connection, the version of MADlib installed on this database, the
-  schema name of MADlib installation, and the R package that is used to
+  connection, and the R package that is used to
   connect to this database.
 }
 
@@ -36,12 +32,6 @@ dbms(conn.id = 1)
 conn(conn.id = 1)
 
 port(conn.id = 1)
-
-madlib(conn.id = 1)
-
-madlib.version(conn.id = 1)
-
-schema.madlib(conn.id = 1)
 
 conn.pkg(conn.id = 1)
 }
@@ -66,13 +56,6 @@ conn.pkg(conn.id = 1)
   used with packages such as RPostgreSQL.
 
   For \code{port}, an integer, which is the port number of the connection.
-
-  For \code{madlib}, a string, which is the MADlib version information.
-
-  For \code{madlib.version}, a string, exactly the same as \code{madlib}.
-
-  For \code{schema.madlib}, a string, which is the schema name of MADlib
-  installation.
 
   For \code{conn.pkg}, a string, which is the name of the R package that
   has been used to connect to this database.
@@ -109,9 +92,6 @@ user(cid1)
 host(cid2)
 dbname(cid1) # use default connection 1
 dbms(cid1)
-madlib(cid1)
-madlib.version(cid1)
-schema.madlib(cid1)
 conn.pkg(cid1)
 
 ## conn is mostly for other packages

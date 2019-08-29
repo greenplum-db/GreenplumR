@@ -65,7 +65,7 @@ exportMethods("colMeans", "colSums")
 export("colAgg", "db.array")
 export("crossprod", "unique")
 # export("exp", "log", "log10", "abs", "factorial", "sign", "sqrt")
-export ("GreenplumR", "pivotalr")
+export ("GreenplumR", "greenplumr")
 S3method(print, none.obj)
 
 exportMethods("cbind2")

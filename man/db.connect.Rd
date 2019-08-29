@@ -11,7 +11,7 @@
 }
 \usage{
 db.connect(host = "localhost", user = Sys.getenv("USER"), dbname = user,
-password = "", port = 5432, madlib = "madlib", conn.pkg = "RPostgreSQL",
+password = "", port = 5432, conn.pkg = "RPostgreSQL",
 default.schemas = NULL, verbose = TRUE, quick = FALSE)
 }
 
@@ -30,19 +30,15 @@ default.schemas = NULL, verbose = TRUE, quick = FALSE)
 }
   \item{password}{
     A string, default is "". The password string used to connect to the database.
-   }
-   \item{port}{
+}
+  \item{port}{
      An integer, default is 5432. The port number used to connect to the database.
-   }
-   \item{madlib}{
-     A string, default is "madlib". The name of the schema where MADlib
-  is installed.
-   }
+}
   \item{conn.pkg}{
     A string, default is "RPostgreSQL". The name of the R package used
     to connect to the database. Currently, only RPostgreSQL is supported,
     but the support for other packages such as RODBC can be easily added.
-  }
+}
   \item{default.schemas}{
     A string, default is \code{NULL}. The search path or default schemas
     of the database that you want to use. The string must be a set of
@@ -75,12 +71,7 @@ default.schemas = NULL, verbose = TRUE, quick = FALSE)
 }
 
 \note{
-  Right only MADlib 0.6 or later is supported. If you have an older
-  version of MADlib, you will not be able to use all the functions whose
-  names start with "madlib.". However you can still use all the other
-  functions.
-
-  Also, right now only PostgreSQL and Greenplum databases are supported.
+  Right now only PostgreSQL and Greenplum databases are supported.
 }
 
 \seealso{

@@ -670,55 +670,6 @@ setMethod("-",
           },
           valueClass = "db.Rquery")
 
-## --
-
-# setMethod("*",
-#           signature(e1 = "db.obj", e2 = "numeric"),
-#           function (e1, e2) {
-#               if (length(names(e1)) == 1 && e1@.col.data_type == "array" &&
-#                   length(e2) == 1) {
-#                   e1 <- e1[[names(e1)]]
-#                   res <- e1
-#                   madlib <- schema.madlib(conn.id(e1))
-#                   res@.expr <- paste(madlib, ".array_scalar_mult(", e1@.expr,
-#                                      "::double precision[], ",
-#                                      e2, "::double precision)", sep = "")
-#                   res@.col.name <- paste(e1@.col.name, "_opr", sep = "")
-#                   ## res@.content <- gsub("^select [^((?! as ).)]+\\S+ as",
-#                   res@.content <- gsub("^select .* as",
-#                                        paste("select ", res@.expr, " as", sep = ""),
-#                                        e1@.content)
-#                   if (is(e1, "db.Rquery")) res@.is.agg <- e1@.is.agg
-#                   return (res)
-#               } else if (length(names(e1)) == 1 && e1@.col.data_type != "array" &&
-#                          length(e2) > 1) {
-#                   res <- e1
-#                   madlib <- schema.madlib(conn.id(e1))
-#                   res@.expr <- paste(madlib, ".array_scalar_mult(array[",
-#                                      paste(e2, collapse=","),
-#                                      "]::double precision[], ", e1@.expr,
-#                                      "::double precision)", sep = "")
-#                   res@.col.name <- paste(e1@.col.name, "_opr", sep = "")
-#                   ## res@.content <- gsub("^select [^((?! as ).)]+\\S+ as",
-#                   res@.content <- gsub("^select .* as",
-#                                        paste("select ", res@.expr, " as", sep = ""),
-#                                        e1@.content)
-#                   if (is(e1, "db.Rquery")) res@.is.agg <- e1@.is.agg
-#                   res@.col.data_type <- "array"
-#                   res@.col.udt_name <- "_float8"
-#                   return (res)
-#               } else {
-#                   res <- .compare(e1, e2, " * ", .num.types,
-#                                   res.type = "double precision",
-#                                   res.udt = "float8", hide.cast = TRUE)
-#                   if (is(e1, "db.Rquery")) res@.is.agg <- e1@.is.agg
-#                   res
-#               }
-#           },
-#           valueClass = "db.Rquery")
-
-## --
-
 setMethod("*",
           signature(e1 = "numeric", e2 = "db.obj"),
           function (e1, e2) {
@@ -1028,59 +979,6 @@ setMethod("-",
           },
           valueClass = "db.Rquery")
 
-## --
-
-# setMethod("*",
-#           signature(e1 = "db.obj", e2 = "db.obj"),
-#           function (e1, e2) {
-#               if (is(e2, "db.Rquery") && e2@.is.agg) {
-#                   e2 <- unlist(lk(e2))
-#                   return (e1 * e2)
-#               }
-#               if (is(e1, "db.Rquery") && e1@.is.agg) {
-#                   e1 <- unlist(lk(e1))
-#                   return (e1 * e2)
-#               }
-#               if (length(names(e1)) == 1 && e1@.col.data_type == "array" &&
-#                   length(names(e2)) == 1 && e2@.col.data_type %in% .num.types) {
-#                   if (! conn.eql(conn.id(e1), conn.id(e2)))
-#                       stop("The two objects are not in the same database!")
-#                   if (!.eql.parent(e1, e2))
-#                       stop("x and y cannot match because they originate",
-#                            " from different sources!")
-#                   e1 <- e1[[names(e1)]]
-#                   e2 <- e2[,]
-#                   res <- e1
-#                   madlib <- schema.madlib(conn.id(e1))
-#                   res@.expr <- paste(madlib, ".array_scalar_mult(", e1@.expr,
-#                                      "::double precision[], (",
-#                                      e2@.expr, ")::double precision)", sep = "")
-#                   res@.col.name <- paste(e1@.col.name, "_opr", sep = "")
-#                   ## res@.content <- gsub("^select [^((?! as ).)]+\\S+ as",
-#                   res@.content <- gsub("^select .* as",
-#                                        paste("select ", res@.expr, " as", sep = ""),
-#                                        e1@.content)
-#                   return (res)
-#               } else if (length(names(e2)) == 1 && e2@.col.data_type == "array" &&
-#                          length(names(e1)) == 1 &&
-#                          e1@.col.data_type %in% .num.types) {
-#                   return (e2 * e1)
-#               } else {
-#                   res <- .operate.two(e1, e2, " * ", list(.num.types),
-#                                       res.type = "double precision",
-#                                       res.udt = "float8", hide.cast = TRUE)
-#                   if (length(names(e1)) == 1 && e1@.col.data_type == "array" &&
-#                       length(names(e2)) == 1 && e2@.col.data_type == "array") {
-#                       res@.col.data_type <- "array"
-#                       res@.col.udt_name <- "_float8"
-#                   }
-#                   res
-#               }
-#           },
-#           valueClass = "db.Rquery")
-
-## --
-
 setMethod("/",
           signature(e1 = "db.obj", e2 = "db.obj"),
           function (e1, e2) {
@@ -1310,35 +1208,6 @@ setMethod("!",
                        res.type = "boolean", cast = "")
           },
           valueClass = "db.Rquery")
-
-## -----------------------------------------------------------------------
-
-# setGeneric("is.na")
-
-# setMethod("is.na",
-#           signature(x = "db.obj"),
-#           function (x) {
-#               ## if (array)
-#               ##     .compare(x, "", " is NULL", NA, "", "boolean", "",
-#               ##              restore.array = FALSE)
-#               ## else
-#               res <- .compare(x, "", " is NULL", NA, "", "boolean", "")
-#               if (length(x@.col.data_type) == 1 && x@.col.data_type == "array") {
-#                   .check.madlib.version(x, 1.3)
-#                   madlib <- schema.madlib(conn.id(x))
-#                   tmp <- paste(res@.expr, " or ", madlib,
-#                                ".array_contains_null(", x@.expr, ")", sep="")
-#                   ## res@.content <- gsub("^select [^((?! as ).)]+\\S+ as",
-#                   res@.content <- gsub("^select .* as",
-#                                        paste("select", tmp, "as"),
-#                                        res@.content)
-#                   res@.expr <- tmp
-#               }
-#               res
-#           },
-#           valueClass = "db.Rquery")
-
-## ----------------------------------------------------------------------
 
 setGeneric("grepl")
 

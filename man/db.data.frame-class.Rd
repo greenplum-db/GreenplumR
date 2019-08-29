@@ -75,19 +75,14 @@ NOT recommended to directly manipulate the internal slots of these objects.
       for a factor column, we add a random string in the names of the
       dummy columns to avoid naming conflicts. So a factor column's
       \code{.factor.suffix} is a random string, otherwise it is just an
-      empty string. This is not to be used by the normal users. It is
-      used only the MADlib wrapper functions that support categorical
-      variables.
+      empty string. This is not to be used by the normal users.
     }
 
     \item{\code{.factor.ref}:}{
       The value of the factor reference level for the regressions. If it is \code{NA}, then the regressions automatically select a reference level.
     }
 
-    \item{\code{.appear.name}:}{Object of class \code{"character"}. This
-  is also related the factor columns. \code{\link{print.lm.madlib}} and
-  \code{\link{print.logregr.madlib}} use this value for printing the
-  names of the dummy columns. This is not to be used by the normal users.}
+    \item{\code{.appear.name}:}{Object of class \code{"character"}. This is not to be used by the normal users.}
 
   \item{\code{.dummy}:}{
     Object of class \code{"character"}. An array of strings,
@@ -123,8 +118,7 @@ Class \code{\linkS4class{db.obj}}, directly.
 \code{\link{sort,db.obj-method}}, \code{\link{subset,db.obj-method}},
 \code{\link{Arith methods}}, \code{\link{Compare methods}},
 \code{\link{Logical methods}}, \code{\link{Extraction methods}},
-\code{\link{Replacement methods}}, \code{\link{madlib.lm}},
-\code{\link{madlib.glm}}, \code{\link{madlib.summary}}
+\code{\link{Replacement methods}}
 }
 
 \author{
