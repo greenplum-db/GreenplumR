@@ -160,11 +160,57 @@ arraydb.to.arrayr <- function (str, type = "double", ...)
         return (FALSE)
 }
 
+## -----------------------------------------------------------------------
+
+.unique.string <- function ()
+{
+    hex_digits <- c(as.character(0:9), letters[1:6])
+    y_digits <- hex_digits[9:12]
+
+    s <- paste(
+        paste(sample(hex_digits, 8), collapse=''),
+        paste(sample(hex_digits, 4), collapse=''),
+        ## paste('4', sample(hex_digits, 3), collapse=''),
+        paste(sample(y_digits,1), sample(hex_digits, 3),
+              collapse='', sep = ''),
+        paste(sample(hex_digits, 12), collapse=''), sep='_')
+    s <- paste("gp_temp_", s, sep = "")
+    s
+}
+
+# .unique.pattern <- function()
+#     "madlib_temp_[a-f\\d]{8}_[a-f\\d]{4}_[a-f\\d]{6}_[a-f\\d]{12}"
+
+.unique.string.short <- function ()
+{
+    hex_digits <- c(as.character(0:9), letters[1:6])
+    s <- paste(sample(hex_digits, 4), collapse='')
+    paste("_gp", s, "_", sep = "")
+}
+
+# .unique.pattern.short <- function()
+#     "_mad[a-f\\d]{4}_"
+
+## -----------------------------------------------------------------------
+
 ## strip the leading and trailing white spaces
 .strip <- function (str, rm = "\\s")
 {
     rm.str <- paste("^", rm, "*(.*[^", rm, "])", rm, "*$", sep = "")
     gsub(rm.str, "\\1", str, perl = TRUE)
+}
+
+## ----------------------------------------------------------------------
+
+.prepare.ind.vars <- function(ind.vars)
+{
+    vars <- gsub("::[\\w\\s]+", "", ind.vars, perl = T)
+    vars <- gsub("\"", "`", vars, perl = T)
+    vars <- gsub("\\(`([^\\[\\]]*?)`\\)\\[(\\d+?)\\]", "`\"\\1\"[\\2]`",
+                 vars, perl = T)
+    vars <- gsub("\\s", "", vars, perl = T)
+    vars <- .reverse.consistent.func(vars)
+    vars
 }
 
 ## -----------------------------------------------------------------------

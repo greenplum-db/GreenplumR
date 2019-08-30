@@ -137,8 +137,7 @@ db.connect <- function (host = "localhost", user = Sys.getenv("USER"), dbname = 
 db.connect.dsn <- function(dsn.key, db.ini = "~/db.ini",
        default.schemas = NULL, verbose = TRUE, quick = FALSE)
 {
-    library(ini)
-    ini.config <- read.ini(db.ini)
+    ini.config <- ini::read.ini(db.ini)
     item.config <- ini.config[[dsn.key]]
     host <- item.config[["host"]]
     port <- item.config[["port"]]
