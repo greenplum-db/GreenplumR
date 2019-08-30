@@ -5,31 +5,91 @@ context("Examples that show how to write tests")
 
 # Need valid 'pivotalr_port' and 'pivotalr_dbname' values
 env <- new.env(parent = globalenv())
-.dbname = get('pivotalr_dbname', envir=env)
-.port = get('pivotalr_port', envir=env)
+#.dbname = get('pivotalr_dbname', envir=env)
+#.port = get('pivotalr_port', envir=env)
 
+.dbname = "rtest"
+.port = 15432
 ## connection ID
 cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 
 ## data in the database
-dat <- as.db.data.frame(abalone, table.name = "abalone", conn.id = cid, verbose = FALSE)
+db.q("DROP TABLE IF EXISTS abalone3;")
+dat <- as.db.data.frame(abalone, table.name = "abalone3", conn.id = cid, verbose = FALSE)
 
-## data in memory
-dat.im <- abalone
+test_that("Create Type Test", {
+    testthat::skip_on_cran()
 
-# ## ----------------------------------------------------------------------
-# ## Tests
-#
-# test_that("Examples of class attributes", {
+    #TEST CASE FOR LIST:
+    # .simplify.signature(list("x"="int", "y"="text",   "z"="float"))
+    randomName <- getRandomNameList()[1]
+    typeName <- sprintf("gptype_%s", randomName)
+    create_type_str <- .create.type(typeName, output.signature = list("x"="int", "y"="text",   "z"="float"), case.sensitive = TRUE)
+    
+    tryCatch({
+        db.q(create_type_str)
+    }, finallly = {
+        #the typename is not case sensitive
+        #run "select * from pg_type where typname = lower(typeName);" inside GP 
+        print(typeName)
+    })
+    message("hello here")
+
+})
+
+# test_that("Test gpapply", {
 #     testthat::skip_on_cran()
 #     ## do some calculation inside test_that
 #     ## These values are not avilable outside test_that function
-#     fdb <- madlib.lm(rings ~ . - id - sex, data = dat)
-#     fm <- summary(lm(rings ~ . - id - sex, data = dat.im))
+#     #df <- data.frame(x = c(1:100))
+#     #dat1 <- as.db.data.frame(df, table.name = "single_col4", conn.id = cid, verbose = FALSE)
+       
+#     res = db.gpapply(X = dat, MARGIN=NULL, FUN = "head(abalone)", output.name=NULL, output.signature=list("x"="int"),
+#         clear.existing=TRUE, case.sensitive=FALSE,output.distributeOn=NULL, language="plr")
 #     ## 2, 3
-#     expect_that(fdb,      is_a("lm.madlib"))
-#     expect_that(fdb$data, is_a("db.data.frame"))
+
+#     message(res)
+#     #expect_that(fdb,      is_a("lm.madlib"))
+#     #expect_that(fdb$data, is_a("db.data.frame"))
 # })
+
+## data in memory
+#dat.im <- abalone
+
+# ## ----------------------------------------------------------------------
+# ## Tests
+
+# test_that("Test gpapply", {
+#     testthat::skip_on_cran()
+#     ## do some calculation inside test_that
+#     ## These values are not avilable outside test_that function
+#     #df <- data.frame(x = c(1:100))
+#     #dat1 <- as.db.data.frame(df, table.name = "single_col4", conn.id = cid, verbose = FALSE)
+       
+#     res = db.gpapply(X = dat, MARGIN=NULL, FUN = "head(abalone)", output.name=NULL, output.signature=list("x"="int"),
+#         clear.existing=TRUE, case.sensitive=FALSE,output.distributeOn=NULL, language="plr"),
+#     ## 2, 3
+
+#     message(res)
+#     #expect_that(fdb,      is_a("lm.madlib"))
+#     #expect_that(fdb$data, is_a("db.data.frame"))
+# })
+message("hello_signature")
+
+test_that("simplify_signature ", {
+    #testthat::skip_on_cran()
+
+    #TEST CASE FOR LIST:
+    # .simplify.signature(list("x"="int", "y"="text",   "z"="float"))
+
+    res = .simplify.signature(list("x"="int"))
+    tryCatch({
+        message("hello here")
+    }, finally ={
+        print("je;dfs")
+    })
+    #message(res)
+})
 
 ## ----------------------------------------------------------------------
 ## To make the computation results available to later test_that
@@ -90,12 +150,12 @@ dat.im <- abalone
 
 ## ----------------------------------------------------------------------
 
-test_that("Examples of testing message", {
-    testthat::skip_on_cran()
-    expect_that(db.q("select * from", content(dat), conn.id = cid),
-                shows_message("Executing"))
-    }
-)
+# test_that("Examples of testing message", {
+#     testthat::skip_on_cran()
+#     expect_that(db.q("select * from", content(dat), conn.id = cid),
+#                 shows_message("Executing"))
+#     }
+# )
 
 ## ----------------------------------------------------------------------
 ## If you want to use the combinations of multiple
@@ -104,13 +164,13 @@ test_that("Examples of testing message", {
 ## 'for' loops to construct test cases.
 ## ----------------------------------------------------------------------
 
-test_that("Examples of running tests in loop", {
-    testthat::skip_on_cran()
-    rows <- c(1, 5, 10)
-    ## 15, 16, 17
-    for (n in rows)
-        expect_that(nrow(lk(dat, n)), equals(n))
-})
+# test_that("Examples of running tests in loop", {
+#     testthat::skip_on_cran()
+#     rows <- c(1, 5, 10)
+#     ## 15, 16, 17
+#     for (n in rows)
+#         expect_that(nrow(lk(dat, n)), equals(n))
+# })
 
 ## ----------------------------------------------------------------------
 
@@ -180,19 +240,19 @@ test_that("Examples of running tests in loop", {
 ## Same test, different results on different platforms
 ## ----------------------------------------------------------------------
 
-test_that("Different results on different platforms", {
-    testthat::skip_on_cran()
-    expect_that(as.character(db.q("select version()", conn.id = cid,
-                                  verbose = FALSE)),
-                if (.get.dbms.str(cid)$db.str == "HAWQ") {
-                    matches("HAWQ")
-                } else if (.get.dbms.str(cid)$db.str == "PostgreSQL") {
-                    matches("PostgreSQL")
-                } else {
-                    matches("Greenplum")
-                })
-    }
-)
+# test_that("Different results on different platforms", {
+#     testthat::skip_on_cran()
+#     expect_that(as.character(db.q("select version()", conn.id = cid,
+#                                   verbose = FALSE)),
+#                 if (.get.dbms.str(cid)$db.str == "HAWQ") {
+#                     matches("HAWQ")
+#                 } else if (.get.dbms.str(cid)$db.str == "PostgreSQL") {
+#                     matches("PostgreSQL")
+#                 } else {
+#                     matches("Greenplum")
+#                 })
+#     }
+# )
 
 ## ----------------------------------------------------------------------
 
@@ -220,42 +280,42 @@ test_that("Different results on different platforms", {
 ## ----------------------------------------------------------------------
 
 ## skip on all situations
-test_that("skipping in all situations", {
-    testthat::skip_on_cran()
-    if (TRUE){
-          skip("Always skip this")}
-    else {
-          tmp <- dat
-          tmp$new.col <- 1
-          expect_that(names(tmp), matches("new.col", all = FALSE))
-          expect_that(db.q("\\dn", verbose = FALSE),
-                      throws_error("syntax error"))
-         }
-    }
-)
+# test_that("skipping in all situations", {
+#     testthat::skip_on_cran()
+#     if (TRUE){
+#           skip("Always skip this")}
+#     else {
+#           tmp <- dat
+#           tmp$new.col <- 1
+#           expect_that(names(tmp), matches("new.col", all = FALSE))
+#           expect_that(db.q("\\dn", verbose = FALSE),
+#                       throws_error("syntax error"))
+#          }
+#     }
+# )
 
-## ----------------------------------------------------------------------
+# ## ----------------------------------------------------------------------
 
-db <- .get.dbms.str(cid)
+# db <- .get.dbms.str(cid)
 
-# skip_if(db$db.str %in% c("HAWQ", "PostgreSQL"),
-#         test_that("Skip this on HAWQ",
-#                   ## 37
-#                   expect_that(db.q("\\dn", verbose = FALSE),
-#                               throws_error("syntax error"))))
+# # skip_if(db$db.str %in% c("HAWQ", "PostgreSQL"),
+# #         test_that("Skip this on HAWQ",
+# #                   ## 37
+# #                   expect_that(db.q("\\dn", verbose = FALSE),
+# #                               throws_error("syntax error"))))
 
-test_that("Skip some tests", {
-    testthat::skip_on_cran()
-    tmp <- dat
-    tmp$new.col <- 1
-    ## 38, 39
-    if(db$db.str == "HAWQ" && grepl("^1\\.2", db$version.str))
-        skip("Skipping for hawq")
-    else{
-      expect_that(names(tmp), matches("new.col", all = FALSE))
-      # expect_output(print(tmp), "*temp*")
-    }
-})
+# test_that("Skip some tests", {
+#     testthat::skip_on_cran()
+#     tmp <- dat
+#     tmp$new.col <- 1
+#     ## 38, 39
+#     if(db$db.str == "HAWQ" && grepl("^1\\.2", db$version.str))
+#         skip("Skipping for hawq")
+#     else{
+#       expect_that(names(tmp), matches("new.col", all = FALSE))
+#       # expect_output(print(tmp), "*temp*")
+#     }
+# })
 
 ## ----------------------------------------------------------------------
 
