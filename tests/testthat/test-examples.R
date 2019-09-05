@@ -14,27 +14,69 @@ env <- new.env(parent = globalenv())
 cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 
 ## data in the database
-db.q("DROP TABLE IF EXISTS abalone3;")
-dat <- as.db.data.frame(abalone, table.name = "abalone3", conn.id = cid, verbose = FALSE)
+dat <- as.db.data.frame(abalone, conn.id = cid, verbose = FALSE)
 
 test_that("Create Type Test", {
     testthat::skip_on_cran()
 
-    #TEST CASE FOR LIST:
-    # .simplify.signature(list("x"="int", "y"="text",   "z"="float"))
-    randomName <- getRandomNameList()[1]
+    randomName <- getRandomNameList()
     typeName <- sprintf("gptype_%s", randomName)
-    create_type_str <- .create.type(typeName, output.signature = list("x"="int", "y"="text",   "z"="float"), case.sensitive = TRUE)
-    
-    tryCatch({
-        db.q(create_type_str)
-    }, finallly = {
-        #the typename is not case sensitive
-        #run "select * from pg_type where typname = lower(typeName);" inside GP 
-        print(typeName)
-    })
-    message("hello here")
+    create_type_str <- .create.type.sql(typeName, signature_list = list("x"="int", "y"="text", "z"="float"))
+    db.q(create_type_str, verbose=FALSE)
 
+    res <- db.q(sprintf("select typname from pg_type where typname=lower('%s');", typeName), verbose=FALSE)
+    expect_equal(nrow(res), 1)
+
+    drop <- paste('DROP TYPE ', typeName, ';', sep='')
+    db.q(drop, verbose=FALSE)
+
+    res <- db.q(sprintf("select typname from pg_type where typname=lower('%s');", typeName), verbose=FALSE)
+    expect_equal(nrow(res), 0)
+})
+
+test_that(".simplify.signature ", {
+    testthat::skip_on_cran()
+
+    res <- .simplify.signature(list("x"="int"))
+    expect_equal(res$x, 'int')
+
+
+    res <- .simplify.signature(list("x"="int", "y"="text", "z"="float"))
+    expect_equal(res$x, 'int')
+    expect_equal(res$y, 'text')
+    expect_equal(res$z, 'float')
+
+    fs <- function() { function() { list("x"="int", "y"="text", "z"="float") } }
+    res <- .simplify.signature(fs)
+    expect_equal(res$x, 'int')
+    expect_equal(res$y, 'text')
+    expect_equal(res$z, 'float')
+
+    res <- .simplify.signature(list("x"="int[]", "y"="text[]", "z"="float"))
+    expect_equal(res$x, 'int[]')
+    expect_equal(res$y, 'text[]')
+    expect_equal(res$z, 'float')
+})
+
+test_that("Test .clear.existing.table", {
+    # 1. Test if output.name is NULL
+    .sql <- .clear.existing.table(output.name = NULL, clear.existing = FALSE)
+    expect_equal(.sql, "")
+
+    table.name <- sprintf("rand_%s", .unique.string())
+    db.q(sprintf("CREATE TABLE %s(id int);", table.name))
+    # 2. output.name is not NULL
+    .sql <- .clear.existing.table(output.name = table.name, clear.existing = TRUE)
+    expect_match(.sql, "^DROP TABLE IF EXISTS rand_", all = FALSE)
+
+    .sql <- tryCatch({
+        .clear.existing.table(output.name = table.name, clear.existing = FALSE)
+    }, error = function(cond) {
+        return (as.character(cond))
+    })
+    expect_match(.sql, "the output table exists, but clear flag is not set", all = FALSE)
+
+    db.q(sprintf("DROP TABLE %s;", table.name), verbose = FALSE)
 })
 
 # test_that("Test gpapply", {
@@ -74,269 +116,62 @@ test_that("Create Type Test", {
 #     #expect_that(fdb,      is_a("lm.madlib"))
 #     #expect_that(fdb$data, is_a("db.data.frame"))
 # })
-message("hello_signature")
 
-test_that("simplify_signature ", {
-    #testthat::skip_on_cran()
+# ----------------------------------------------------------------------
+# To make the computation results available to later test_that
+# need to do the calculation on the upper level
+# ----------------------------------------------------------------------
 
-    #TEST CASE FOR LIST:
-    # .simplify.signature(list("x"="int", "y"="text",   "z"="float"))
+# ----------------------------------------------------------------------
 
-    res = .simplify.signature(list("x"="int"))
-    tryCatch({
-        message("hello here")
-    }, finally ={
-        print("je;dfs")
-    })
-    #message(res)
+test_that("Examples of testing string existence", {
+    testthat::skip_on_cran()
+    tmp <- dat
+    tmp$new.col <- 1
+    expect_match(names(tmp), "new.col", all = FALSE)
 })
 
-## ----------------------------------------------------------------------
-## To make the computation results available to later test_that
-## need to do the calculation on the upper level
-## ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
-# fdb <- madlib.lm(rings ~ . - id - sex, data = dat)
-# fm <- summary(lm(rings ~ . - id - sex, data = dat.im))
+test_that("Examples of testing message", {
+    testthat::skip_on_cran()
+    expect_that(db.q("select * from", content(dat), conn.id = cid),
+                shows_message("Executing"))
+})
 
-# test_that("Examples of value equivalent", {
-#     testthat::skip_on_cran()
-#     ## numeric values are the same, but names are not
-#     ## 4, 5, 6
-#     expect_that(as.numeric(fdb$coef),    equals(as.numeric(fm$coefficients[,1])))
-#     expect_that(fdb$coef,    is_equivalent_to(fm$coefficients[,1]))
-#     expect_that(fdb$std_err, is_equivalent_to(fm$coefficients[,2]))
-# })
+# ----------------------------------------------------------------------
+# Same test, different results on different platforms
+# ----------------------------------------------------------------------
 
-## ----------------------------------------------------------------------
+test_that("Different results on different platforms", {
+    testthat::skip_on_cran()
+    res <- as.character(db.q("select version()", conn.id = cid, verbose = FALSE))
+    if (.get.dbms.str(cid)$db.str == "PostgreSQL") {
+    expect_match(res, "PostgreSQL")
+    } else {
+    expect_match(res, "Greenplum")
+    }
+})
 
-# test_that("Examples of testing TRUE or FALSE", {
-#     testthat::skip_on_cran()
-#     ## 7, 8
-#     expect_that("no_such_col" %in% fdb$col.name, is_false())
-#     expect_that(fdb$has.intercept,               is_true())
-# })
+# ----------------------------------------------------------------------
+# Skip tests
+# ----------------------------------------------------------------------
 
-## ----------------------------------------------------------------------
+# skip on all situations
+test_that("skipping in all situations", {
+    testthat::skip_on_cran()
+    if (TRUE){
+          skip("Always skip this")}
+    else {
+          tmp <- dat
+          tmp$new.col <- 1
+          expect_match(names(tmp), "new.col", all = FALSE)
+          expect_that(db.q("\\dn", verbose = FALSE),
+                      throws_error("syntax error"))
+    }
+})
 
-# test_that("Example of identical", {
-#     testthat::skip_on_cran()
-#     ## Two values are equal but not identical
-#     ## expect_that(fdb$r2, is_identical_to(fm$r.squared)) # will fail
-
-#     r2 <- fdb$r2 # same object, identical
-#     ## 9
-#     expect_that(fdb$r2, is_identical_to(r2))
-# })
-
-## ----------------------------------------------------------------------
-
-# test_that("Examples of testing string existence", {
-#     testthat::skip_on_cran()
-#     tmp <- dat
-#     tmp$new.col <- 1
-#     ## 10, 11
-#     expect_that(names(tmp), matches("new.col", all = FALSE)) # one value matches
-# })
-
-## ----------------------------------------------------------------------
-
-# test_that("Examples of testing warnings", {
-#     testthat::skip_on_cran()
-#     expect_that(madlib.elnet(rings ~ . - id, data = dat, method = "cd"),
-#                 gives_warning("number of features is larger"))
-#     }
-# )
-
-## ----------------------------------------------------------------------
-
-# test_that("Examples of testing message", {
-#     testthat::skip_on_cran()
-#     expect_that(db.q("select * from", content(dat), conn.id = cid),
-#                 shows_message("Executing"))
-#     }
-# )
-
-## ----------------------------------------------------------------------
-## If you want to use the combinations of multiple
-## variables, use 'for' loops
-## The following examples show that you can use
-## 'for' loops to construct test cases.
-## ----------------------------------------------------------------------
-
-# test_that("Examples of running tests in loop", {
-#     testthat::skip_on_cran()
-#     rows <- c(1, 5, 10)
-#     ## 15, 16, 17
-#     for (n in rows)
-#         expect_that(nrow(lk(dat, n)), equals(n))
-# })
-
-## ----------------------------------------------------------------------
-
-# test_that("Examples of using multiple loops", {
-#     testthat::skip_on_cran()
-#     fit.this <- "rings ~ height + whole"
-#     vars <- c("shell", "length", "diameter", "shucked")
-#     rows <- c(1000, 2000, 3000)
-#     ## 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
-#     for (var in vars) {
-#         fit.this <- paste(fit.this, "+", var)
-#         for (n in rows){
-#           sub_dat <- dat[dat$id < n, ]
-#           expect_warning(madlib.lm(formula(fit.this), data = sub_dat), NA)
-#         }
-#     }
-# })
-
-## ----------------------------------------------------------------------
-## Some complicated functions need multiple lines, which can be put inside
-## a pair of {}
-## ----------------------------------------------------------------------
-
-# test_that("Install-check should run without error", {
-#     testthat::skip_on_cran()
-#     expect_warning({
-#         x <- matrix(rnorm(100*20),100,20)
-#         y <- rnorm(100, 0.1, 2)
-
-#         dat <- data.frame(x, y) # this data is available only in this block
-#         delete("eldata", conn.id = cid)
-#         z <- as.db.data.frame(dat, "eldata", conn.id = cid, verbose = FALSE)
-#         g <- generic.cv(train = function (data, alpha, lambda) {
-#                                   madlib.elnet(y ~ ., data = data, family = "gaussian", alpha =
-#                                                alpha, lambda = lambda,
-#                                                control = list(random.stepsize=TRUE))
-#                                 },
-#                         predict = predict,
-#                         metric = function (predicted, data) {
-#                           lk(mean((data$y - predicted)^2))
-#                         },
-#                         data = z,
-#                         params = list(alpha=1, lambda=seq(0,0.2,0.1)),
-#                         k = 5, find.min = TRUE, verbose = FALSE)
-#           })
-#     }
-# )
-
-## ----------------------------------------------------------------------
-#
-# test_that("Install-check 2", {
-#     testthat::skip_on_cran()
-#     expect_warning({
-#         err <- generic.cv(function(data) {
-#                           madlib.lm(rings ~ . - id - sex, data = data)
-#                           },
-#                         predict,
-#                         function(predicted, data) {
-#                               lookat(mean((data$rings - predicted)^2))
-#                         },
-#                         data = dat, # this dat is the global dat
-#                         verbose = FALSE)
-#         })
-#     }
-# )
-## ----------------------------------------------------------------------
-## Same test, different results on different platforms
-## ----------------------------------------------------------------------
-
-# test_that("Different results on different platforms", {
-#     testthat::skip_on_cran()
-#     expect_that(as.character(db.q("select version()", conn.id = cid,
-#                                   verbose = FALSE)),
-#                 if (.get.dbms.str(cid)$db.str == "HAWQ") {
-#                     matches("HAWQ")
-#                 } else if (.get.dbms.str(cid)$db.str == "PostgreSQL") {
-#                     matches("PostgreSQL")
-#                 } else {
-#                     matches("Greenplum")
-#                 })
-#     }
-# )
-
-## ----------------------------------------------------------------------
-
-# test_that("Different results on different versions of HAWQ", {
-#     testthat::skip_on_cran()
-#     ## 33
-#     expect_that(as.character(db.q("select madlib.version()", conn.id = cid,
-#                                   verbose = FALSE)),
-#         {
-#                   db <- .get.dbms.str(cid)
-#                   if (db$db.str == "HAWQ") {
-#           if (grepl("^1\\.1", db$version.str)) # older HAWQ
-#               matches("0\\.5")
-#           else # new HAWQ
-#               matches("MADlib version: 1\\.")
-#           } else {
-#               matches("MADlib") # always pass
-#           }
-#         })
-#     }
-# )
-
-## ----------------------------------------------------------------------
-## Skip tests
-## ----------------------------------------------------------------------
-
-## skip on all situations
-# test_that("skipping in all situations", {
-#     testthat::skip_on_cran()
-#     if (TRUE){
-#           skip("Always skip this")}
-#     else {
-#           tmp <- dat
-#           tmp$new.col <- 1
-#           expect_that(names(tmp), matches("new.col", all = FALSE))
-#           expect_that(db.q("\\dn", verbose = FALSE),
-#                       throws_error("syntax error"))
-#          }
-#     }
-# )
-
-# ## ----------------------------------------------------------------------
-
-# db <- .get.dbms.str(cid)
-
-# # skip_if(db$db.str %in% c("HAWQ", "PostgreSQL"),
-# #         test_that("Skip this on HAWQ",
-# #                   ## 37
-# #                   expect_that(db.q("\\dn", verbose = FALSE),
-# #                               throws_error("syntax error"))))
-
-# test_that("Skip some tests", {
-#     testthat::skip_on_cran()
-#     tmp <- dat
-#     tmp$new.col <- 1
-#     ## 38, 39
-#     if(db$db.str == "HAWQ" && grepl("^1\\.2", db$version.str))
-#         skip("Skipping for hawq")
-#     else{
-#       expect_that(names(tmp), matches("new.col", all = FALSE))
-#       # expect_output(print(tmp), "*temp*")
-#     }
-# })
-
-## ----------------------------------------------------------------------
-
-## directly test SQL
-# test_that("Test MADlib SQL", {
-#     testthat::skip_on_cran()
-#     table <- content(dat)
-#     madsch <- schema.madlib(conn.id = cid)
-#     res <- db.q(
-#         "
-#         drop table if exists lin_out, lin_out_summary;
-#         select ", madsch, ".linregr_train('", table, "',
-#         'lin_out', 'rings', 'array[1, length, diameter, shell]');
-#         select coef from lin_out;
-#         ", conn.id = cid, verbose = FALSE, nrows = -1)
-#     res <- as.numeric(arraydb.to.arrayr(res))
-#     fit <- lm(rings ~ length + diameter + shell, data = lk(table, -1))
-#     expect_that(res, equals(as.numeric(fit$coefficients)))
-# })
-
-## ----------------------------------------------------------------------
-## Clean up
+# ----------------------------------------------------------------------
+# Clean up
 
 db.disconnect(cid, verbose = FALSE)

@@ -30,7 +30,7 @@
     if (is.null(output.name) || !db.existsObject(output.name))
         return ('')
     if (is.logical(clear.existing) && isTRUE(clear.existing))
-        return (paste("DROP TABLE IF EXISTS ", output.name, ";"))
+        return (paste("DROP TABLE IF EXISTS ", output.name, ";", sep=''))
     # NZR truncate talbe if clear.existing is 'truncate',
     # but this doesn't work for greenplum. If we need to support the 'truncate'
     # value for clear.existing, just drop this table.
@@ -67,8 +67,6 @@
 
     fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
     typelist_str <- paste(typelist_str, fieldStr, "\n);", collapse="")
-
-    print(paste('Create type:', typelist_str))
 
     return (typelist_str)
 }

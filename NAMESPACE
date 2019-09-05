@@ -98,10 +98,12 @@ exportMethods("na.omit")
 export("db.q", "db", ".db")
 
 export("db.gptapply")
+export("db.gpapply")
 
 
 exportMethods("ifelse", "rowSums", "rowMeans")
 
 exportMethods("relevel")
 
-
+# export these functions used by tests
+export("getRandomNameList")
