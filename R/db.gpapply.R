@@ -9,7 +9,7 @@
     else
     {
         query <- sprintf("CREATE TABLE %s AS WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
-                output.name, funName, param_list_str_no_type, param_list_str_no_type, relation_name, typeName, .distribute.str(output.distributeOn))
+                output.name, funName, param_list_str, param_list_str, relation_name, typeName, .distribute.str(output.distributeOn))
 
         clearStmt <- .clear.existing.table(output.name, clear.existing)
         if (nchar(clearStmt)>0)
@@ -40,6 +40,7 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
     } else {
         # signature is not null, create a type
         create_type_sql <- .create.type.sql(typeName, output.signature)
+        print(create_type_sql)
         db.q(create_type_sql)
     }
 
@@ -61,11 +62,13 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
     createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, col.names=ar$.col.name,
                                     param.list.str=param_list_str_with_type, args=list(...),
                                     runtime.id=runtime.id, language=language)
+    print(createStmt)
     db.q(createStmt)
 
     # Run the generated query inside GPDB
     query <- .generate.gpapply.query(output.name, .to.func.name(basename), param_list_str_no_type,
                                 relation_name, typeName, output.distributeOn, clear.existing)
+    print(query)
     results <- db.q(query, nrows = NULL)
 
     #drop type
