@@ -16,11 +16,15 @@ cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 ## data in the database
 dat <- as.db.data.frame(abalone, conn.id = cid, verbose = FALSE)
 
+random.name <- function() {
+    getRandomNameList()
+}
+
 test_that("Create Type Test", {
     testthat::skip_on_cran()
 
-    randomName <- getRandomNameList()
-    typeName <- sprintf("gptype_%s", randomName)
+    basename <- random.name()
+    typeName <- .to.type.name(basename)
     create_type_str <- .create.type.sql(typeName, signature_list = list("x"="int", "y"="text", "z"="float"))
     db.q(create_type_str, verbose=FALSE)
 
@@ -64,7 +68,7 @@ test_that("Test .clear.existing.table", {
     expect_equal(.sql, "")
 
     table.name <- sprintf("rand_%s", .unique.string())
-    db.q(sprintf("CREATE TABLE %s(id int);", table.name))
+    db.q(sprintf("CREATE TABLE %s(id int);", table.name), verbose = FALSE)
     # 2. output.name is not NULL
     .sql <- .clear.existing.table(output.name = table.name, clear.existing = TRUE)
     expect_match(.sql, "^DROP TABLE IF EXISTS rand_", all = FALSE)
@@ -79,6 +83,63 @@ test_that("Test .clear.existing.table", {
     db.q(sprintf("DROP TABLE %s;", table.name), verbose = FALSE)
 })
 
+test_that("Test .distribute.str", {
+    .dist <- .distribute.str(NULL)
+    expect_equal(.dist, '')
+    expect_equal(.distribute.str(NULL), "")
+    expect_equal(.distribute.str('randomly'), "DISTRIBUTED RANDOMLY")
+    expect_equal(.distribute.str('RANDomly'), "DISTRIBUTED RANDOMLY")
+    expect_equal(.distribute.str('replicated'), "DISTRIBUTED REPLICATED")
+    expect_equal(.distribute.str('rePLICated'), "DISTRIBUTED REPLICATED")
+
+    randomName <- random.name()
+    .dist <- tryCatch({
+        .distribute.str('invalid character')
+    }, error = function(cond) {
+        return (randomName)
+    })
+    expect_equal(.dist, randomName)
+
+    # distributed by (a, b, c)
+    .dist <- .distribute.str(list("Apple", "Banana", "Cannon"))
+    expect_equal(.dist, "DISTRIBUTED BY (Apple, Banana, Cannon)")
+})
+
+test_that("Test .create.r.wrapper", {
+    basename <- random.name()
+    sqrtFUN <- function(x) sqrt(x[[1]])
+    .signature <- list("id"="int", "name"="text")
+    param_list_str_with_type <- paste(names(.signature), .signature, collapse=", ")
+
+    funName <- .to.func.name(basename)
+    typeName <- .to.type.name(basename)
+    runtime.id <- 'plc_r_poison'
+    language <- 'plcontainer'
+    .sql <- .create.r.wrapper(basename = basename, FUN = sqrtFUN, col.names = names(.signature), 
+           param.list.str = param_list_str_with_type, args=list('hello'), runtime.id=runtime.id, language=language)
+
+    L <- unlist(strsplit(.sql, split='\n'))
+
+    expect_match(L[1], "^CREATE FUNCTION gprfunc_.* RETURNS SETOF gptype_.*")
+    expect_match(L[2], "# container: plc_r_poison")
+    expect_match(L[length(L)], "LANGUAGE 'plcontainer';$")
+
+    # Create Type
+    db.q(.create.type.sql(typeName, signature_list=.signature), verbose=FALSE)
+    db.q(.sql, verbose=FALSE)
+    
+    n.type <- db.q(paste("SELECT typname FROM pg_type WHERE typname=lower('", typeName, "');", sep=""), verbose=FALSE)
+    n.func <- db.q(paste("SELECT proname FROM pg_proc WHERE proname=lower('", funName, "');", sep=""), verbose=FALSE)
+    expect_equal(nrow(n.type), 1)
+    expect_equal(nrow(n.func), 1)
+
+    db.q(paste("DROP TYPE ", typeName, " CASCADE;", sep=""), verbose=FALSE)
+
+    n.type <- db.q(paste("SELECT typname FROM pg_type WHERE typname=lower('", typeName, "');", sep=""), verbose=FALSE)
+    n.func <- db.q(paste("SELECT proname FROM pg_proc WHERE proname=lower('", funName, "');", sep=""), verbose=FALSE)
+    expect_equal(nrow(n.type), 0)
+    expect_equal(nrow(n.func), 0)
+})
 # test_that("Test gpapply", {
 #     testthat::skip_on_cran()
 #     ## do some calculation inside test_that
@@ -133,11 +194,11 @@ test_that("Examples of testing string existence", {
 
 # ----------------------------------------------------------------------
 
-test_that("Examples of testing message", {
-    testthat::skip_on_cran()
-    expect_that(db.q("select * from", content(dat), conn.id = cid),
-                shows_message("Executing"))
-})
+# test_that("Examples of testing message", {
+#     testthat::skip_on_cran()
+#     expect_that(db.q("select * from", content(dat), conn.id = cid),
+#                 shows_message("Executing"))
+# })
 
 # ----------------------------------------------------------------------
 # Same test, different results on different platforms

@@ -30,10 +30,10 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
 
     if (!is.function(FUN))
         stop("FUN must be a function")
-    randomName <- getRandomNameList()
+    basename <- getRandomNameList()
 
     #create returned type if output.signature is not null
-    typeName <- sprintf("gptype_%s", randomName)
+    typeName <- .to.type.name(basename)
     if (is.null(output.signature)) {
         # TODO: signaturee is null
         stop("NULL signature, not impl")
@@ -58,13 +58,13 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
     param_list_str_with_type <- paste(ar$.col.name, ar$.col.udt_name, collapse=", ")
 
     # Create function
-    createStmt <- .create.r.wrapper(name=randomName, FUN=FUN, col.names=ar$.col.name,
+    createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, col.names=ar$.col.name,
                                     param.list.str=param_list_str_with_type, args=list(...),
                                     runtime.id=runtime.id, language=language)
     db.q(createStmt)
 
     # Run the generated query inside GPDB
-    query <- .generate.gpapply.query(output.name, funName, param_list_str_no_type,
+    query <- .generate.gpapply.query(output.name, .to.func.name(basename), param_list_str_no_type,
                                 relation_name, typeName, output.distributeOn, clear.existing)
     results <- db.q(query, nrows = NULL)
 

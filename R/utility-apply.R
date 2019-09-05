@@ -1,6 +1,12 @@
 
 # needs to test
+.to.type.name <- function(basename) {
+    paste("gptype_", basename, sep = "")
+}
 
+.to.func.name <- function(basename) {
+    paste("gprfunc_", basename, sep = "")
+}
 .simplify.signature <- function(signature) {
     if (is.null(signature) || is.list(signature))
         return (signature)
@@ -21,7 +27,7 @@
         else stop("invalid distribute value")
     } else if (is.list(distributeOn)) {
         # DISTRIBUTED BY (column)
-        paste("DISTRIBUTED BY (", paste(distributeOn, sep=","), ")")
+        paste("DISTRIBUTED BY (", paste(distributeOn, collapse=", "), ")", sep="")
     } else {
         stop("invalid distributed value")
     }
@@ -77,21 +83,21 @@ getRandomNameList <- function(n = 1) {
   a[1]
 }
 
-.create.r.wrapper <- function(name, FUN, col.names, param.list.str, args, runtime.id='', language='plr') {
+.create.r.wrapper <- function(basename, FUN, col.names, param.list.str, args, runtime.id='', language='plcontainer') {
  #generate output
     local_data_frame_str <- paste(col.names, col.names, sep='=', collapse=', ')
     listStr <- .extract.param.list(args)
     if (nchar(listStr)>0)
         listStr <- paste(', ', listStr, sep='')
 
-    typeName <- paste('gptype_', name)
-    funName <- paste("gprfunc_", name, sep="")
-    funBody <- paste("# container:  ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"))
-    localdf <- sprintf("df <- data.frame(%s)\n", local_data_frame_str)
-    localcall <- sprintf("do.call(gplocalf, list(df %s))", listStr);
+    typeName <- .to.type.name(basename)
+    funName <- .to.func.name(basename)
+    funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
+    localdf <- sprintf("df <- data.frame(%s)", local_data_frame_str)
+    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr);
 
     #Question: CREATE OR REPLACE FUNCTION?
-    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
+    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
                           funName, param.list.str, typeName, funBody, localdf, localcall, language);
 }
 
