@@ -1,4 +1,4 @@
-context("Examples that show how to write tests")
+context("Unit test of functions used by gpapply/gptapply")
 
 ## ----------------------------------------------------------------------
 ## Test preparations
@@ -109,22 +109,23 @@ test_that("Test .create.r.wrapper", {
     basename <- random.name()
     sqrtFUN <- function(x) sqrt(x[[1]])
     .signature <- list("id"="int", "name"="text")
+    X <- as.db.data.frame(abalone[c(1:4), c(3,2)], conn.id = cid, verbose = FALSE)
     param_list_str_with_type <- paste(names(.signature), .signature, collapse=", ")
 
     funName <- .to.func.name(basename)
     typeName <- .to.type.name(basename)
     runtime.id <- 'plc_r_poison'
-    language <- 'plcontainer'
-    .sql <- .create.r.wrapper(basename = basename, FUN = sqrtFUN, col.names = names(.signature), 
-           param.list.str = param_list_str_with_type, args=list('hello'), runtime.id=runtime.id, language=language)
+    language <- 'plr'
+    .sql <- .create.r.wrapper(basename = basename, FUN = sqrtFUN, Xattr = attributes(X),
+                                args=list('hello'), runtime.id=runtime.id, language=language)
 
     L <- unlist(strsplit(.sql, split='\n'))
 
     expect_match(L[1], "^CREATE FUNCTION gprfunc_.* RETURNS SETOF gptype_.*")
     expect_match(L[2], "# container: plc_r_poison")
-    expect_match(L[length(L)], "LANGUAGE 'plcontainer';$")
+    expect_match(L[length(L)], paste("LANGUAGE '", language, "';$", sep=""))
 
-    # Create Type
+    # Create Type and Create Function
     db.q(.create.type.sql(typeName, signature_list=.signature), verbose=FALSE)
     db.q(.sql, verbose=FALSE)
     
@@ -140,43 +141,6 @@ test_that("Test .create.r.wrapper", {
     expect_equal(nrow(n.type), 0)
     expect_equal(nrow(n.func), 0)
 })
-# test_that("Test gpapply", {
-#     testthat::skip_on_cran()
-#     ## do some calculation inside test_that
-#     ## These values are not avilable outside test_that function
-#     #df <- data.frame(x = c(1:100))
-#     #dat1 <- as.db.data.frame(df, table.name = "single_col4", conn.id = cid, verbose = FALSE)
-       
-#     res = db.gpapply(X = dat, MARGIN=NULL, FUN = "head(abalone)", output.name=NULL, output.signature=list("x"="int"),
-#         clear.existing=TRUE, case.sensitive=FALSE,output.distributeOn=NULL, language="plr")
-#     ## 2, 3
-
-#     message(res)
-#     #expect_that(fdb,      is_a("lm.madlib"))
-#     #expect_that(fdb$data, is_a("db.data.frame"))
-# })
-
-## data in memory
-#dat.im <- abalone
-
-# ## ----------------------------------------------------------------------
-# ## Tests
-
-# test_that("Test gpapply", {
-#     testthat::skip_on_cran()
-#     ## do some calculation inside test_that
-#     ## These values are not avilable outside test_that function
-#     #df <- data.frame(x = c(1:100))
-#     #dat1 <- as.db.data.frame(df, table.name = "single_col4", conn.id = cid, verbose = FALSE)
-       
-#     res = db.gpapply(X = dat, MARGIN=NULL, FUN = "head(abalone)", output.name=NULL, output.signature=list("x"="int"),
-#         clear.existing=TRUE, case.sensitive=FALSE,output.distributeOn=NULL, language="plr"),
-#     ## 2, 3
-
-#     message(res)
-#     #expect_that(fdb,      is_a("lm.madlib"))
-#     #expect_that(fdb$data, is_a("db.data.frame"))
-# })
 
 # ----------------------------------------------------------------------
 # To make the computation results available to later test_that
@@ -214,23 +178,6 @@ test_that("Different results on different platforms", {
     }
 })
 
-# ----------------------------------------------------------------------
-# Skip tests
-# ----------------------------------------------------------------------
-
-# skip on all situations
-test_that("skipping in all situations", {
-    testthat::skip_on_cran()
-    if (TRUE){
-          skip("Always skip this")}
-    else {
-          tmp <- dat
-          tmp$new.col <- 1
-          expect_match(names(tmp), "new.col", all = FALSE)
-          expect_that(db.q("\\dn", verbose = FALSE),
-                      throws_error("syntax error"))
-    }
-})
 
 # ----------------------------------------------------------------------
 # Clean up

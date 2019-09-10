@@ -7,6 +7,20 @@
 .to.func.name <- function(basename) {
     paste("gprfunc_", basename, sep = "")
 }
+
+# TODO: is `output.name` allowed to be schema.table?
+#       now, output.name is assumed to be a single relation name
+.check.output.name <- function(output.name) {
+    if (is.null(output.name))
+        return(NULL)
+    if (!is.character(output.name))
+        stop("output.name must be NULL or a charater")
+    res <- regexpr("[a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)?", output.name, perl = FALSE)
+    match.length <- attr(res, "match.length")
+    if (match.length != nchar(output.name))
+        stop(paste("invalid output.name:", output.name))
+}
+
 .simplify.signature <- function(signature) {
     if (is.null(signature) || is.list(signature))
         return (signature)
@@ -33,7 +47,11 @@
     }
 }
 .clear.existing.table <- function(output.name, clear.existing) {
-    if (is.null(output.name) || !db.existsObject(output.name))
+    if (is.null(output.name))
+        return ('')
+    if (!is.character(output.name))
+        stop("output.name must be NULL or type of character")
+    if (!db.existsObject(output.name))
         return ('')
     if (is.logical(clear.existing) && isTRUE(clear.existing))
         return (paste("DROP TABLE IF EXISTS ", output.name, ";", sep=''))
@@ -48,7 +66,7 @@
     if (is.null(param_list) || length(param_list)==0)
         return ("")
     arg_str_array <- strsplit(deparse(param_list), ", .Names = ")[[1]]
-    message(length(arg_str_array))
+
     if (length(arg_str_array) == 1)
     {
         listStr <- substr(arg_str_array[1], 6, nchar(arg_str_array[1]) - 1)
@@ -63,7 +81,14 @@
     }
 }
 
-.create.type.sql <- function(typeName, signature_list) {
+.check.language <- function(language) {
+    if (is.null(language) || !is.character(language))
+        stop("lanuage must be a character")
+    if (language != 'plr' && language != 'plcontainer')
+        stop(paste("invalid language:", language))
+}
+
+.create.type.sql <- function(typeName, signature_list, case.sensitive=FALSE) {
     if (is.null(signature_list))
       return (NULL)
 
@@ -71,7 +96,11 @@
     typelist_str <- sprintf("CREATE TYPE %s AS (\n", typeName)
     typelist <- .simplify.signature(signature_list)
 
-    fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
+    if (isTRUE(case.sensitive))
+        fieldStr <- paste("\"", names(typelist), "\" ", typelist, sep="", collapse=",\n")
+    else
+        fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
+
     typelist_str <- paste(typelist_str, fieldStr, "\n);", collapse="")
 
     return (typelist_str)
@@ -83,9 +112,10 @@ getRandomNameList <- function(n = 1) {
   a[1]
 }
 
-.create.r.wrapper <- function(basename, FUN, col.names, param.list.str, args, runtime.id='', language='plcontainer') {
+.create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer') {
  #generate output
-    local_data_frame_str <- paste(col.names, col.names, sep='=', collapse=', ')
+    local_data_frame_str <- paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
+    param.list.str <- paste(Xattr$.col.name, Xattr$.col.udt_name, collapse=", ")
     listStr <- .extract.param.list(args)
     if (nchar(listStr)>0)
         listStr <- paste(', ', listStr, sep='')
@@ -101,3 +131,6 @@ getRandomNameList <- function(n = 1) {
                           funName, param.list.str, typeName, funBody, localdf, localcall, language);
 }
 
+.create.r.wrapper2 <- function() {
+
+}

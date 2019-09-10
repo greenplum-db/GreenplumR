@@ -1,3 +1,8 @@
+# TODO OPTIMIZATION:
+#   `X$.cols <- list('col1', 'col2')`
+#   If the table has too many columns, and the function only wants few of them, we'd better pass
+#   columns as few as possible provided by user.
+
 # needs to test
 .generate.gpapply.query <- function(output.name, funName, param_list_str,
                         relation_name, typeName, output.distributeOn, clear.existing){
@@ -27,9 +32,13 @@
 db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.signature=NULL, clear.existing=FALSE,
                        case.sensitive=FALSE, output.distributeOn=NULL, runtime.id='plc_r_shared', language="plcontainer", ...)
 {
-
+    if (is.null(X) || !is.db.data.frame(X))
+        stop("X must be a db.data.frame")
     if (!is.function(FUN))
         stop("FUN must be a function")
+    .check.output.name(output.name)
+    .check.language(language)
+
     basename <- getRandomNameList()
 
     #create returned type if output.signature is not null
@@ -39,7 +48,7 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
         stop("NULL signature, not impl")
     } else {
         # signature is not null, create a type
-        create_type_sql <- .create.type.sql(typeName, output.signature)
+        create_type_sql <- .create.type.sql(typeName, output.signature, case.sensitive = case.sensitive)
         print(create_type_sql)
         db.q(create_type_sql)
     }
@@ -47,20 +56,27 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
     # generate function parameter str
     ar <- attributes(X)
     relation_name <- ar$.content
+    # "col1 type1, col2 type2"
+    # param_list_str_with_type <- paste(ar$.col.name, ar$.col.udt_name, collapse=", ")
     #CASE_SENSITIVE: relation_name, param_list_str
     if (case.sensitive){
         if (!is.null(output.name))
-            output.name <-  paste("\"",output.name,"\"", sep='')
-        relation_name <- paste("\"",relation_name,"\"", sep='')
-        ar$.col.name <- paste("\"", ar$.col.name, "\"", sep='')
+            output.name <-  paste("\"", unlist(strsplit(output.name, '\\.')),"\"", sep='', collapse='.')
+        # ar$.col.name <- paste("\"", ar$.col.name, "\"", sep='')
+        param_list_str_no_type <- paste("\"", ar$.col.name, "\"", sep='', collapse=", ")
+    } else {
+        # if not case sensitive, all default names created by postgresql are lower case
+        if (!is.null(output.name))
+            output.name <- tolower(output.name)
+        param_list_str_no_type <- paste(ar$.col.name, collapse=", ")
     }
-
-    param_list_str_no_type <- paste(ar$.col.name, collapse=", ")
-    param_list_str_with_type <- paste(ar$.col.name, ar$.col.udt_name, collapse=", ")
+    # case.sensitive is TRUE:  "\"col1\", \"col2\""
+    # case.sensitive is FALSE: "col1, col2"
+    # param_list_str_no_type <- paste(ar$.col.name, collapse=", ")
+    
 
     # Create function
-    createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, col.names=ar$.col.name,
-                                    param.list.str=param_list_str_with_type, args=list(...),
+    createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, Xattr=ar, args=list(...),
                                     runtime.id=runtime.id, language=language)
     print(createStmt)
     db.q(createStmt)
