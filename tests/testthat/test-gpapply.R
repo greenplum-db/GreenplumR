@@ -8,8 +8,9 @@ env <- new.env(parent = globalenv())
 #.dbname = get('pivotalr_dbname', envir=env)
 #.port = get('pivotalr_port', envir=env)
 
-.dbname = "d_apply"
-.port = 15432
+.dbname <- "d_apply"
+.port <- 15432
+.language <- 'plr'
 ## connection ID
 cid <- db.connect(port = .port, dbname = .dbname, verbose = FALSE)
 .nrow.test <- 10
@@ -62,7 +63,7 @@ test_that("Test output.name is NULL", {
     # case sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = TRUE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = TRUE, language = .language)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.1.col))
     expect_equal(ncol(res), ncol(dat.1.col))
@@ -70,7 +71,7 @@ test_that("Test output.name is NULL", {
     # case non-sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.1.col))
     expect_equal(ncol(res), ncol(dat.1.col))
@@ -78,7 +79,7 @@ test_that("Test output.name is NULL", {
     # clear.existing can be FALSE, or any other values, since output.name is NULL
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = FALSE, case.sensitive = TRUE, language = 'plr')
+                    clear.existing = FALSE, case.sensitive = TRUE, language = .language)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.1.col))
     expect_equal(ncol(res), ncol(dat.1.col))
@@ -91,7 +92,7 @@ test_that("Test output.name is a table name", {
     # case sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = TRUE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = TRUE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM \"", .output.name, "\" WHERE \"Score\" IS NOT NULL;", sep=''))
     expect_equal(is.data.frame(res), TRUE)
@@ -100,7 +101,7 @@ test_that("Test output.name is a table name", {
     # case non-sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep=''))
     expect_equal(is.data.frame(res), TRUE)
@@ -114,7 +115,7 @@ test_that("Test output.name is schema.table", {
     # case sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = TRUE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = TRUE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM \"test_schema\".\"resultGPapply\" WHERE \"Score\" IS NOT NULL;"))
     expect_equal(is.data.frame(res), TRUE)
@@ -123,7 +124,7 @@ test_that("Test output.name is schema.table", {
     # case non-sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep=''))
     expect_equal(is.data.frame(res), TRUE)
@@ -138,7 +139,7 @@ test_that("Test output.name is invalid name", {
         tryCatch({
             db.gpapply(dat.1.col, output.name = name,
                     FUN = fn.inc, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
             stop("can't be here")
         }, error = function(e) {
             expect_match(as.character(e), "invalid output.name:")
@@ -164,7 +165,7 @@ test_that("Test output.signature", {
     # 2. output.signature is a function
     f.sig <- function() return(list("Score" = "float"))
     res <- db.gpapply(dat.1.col, output.name = .output.name, FUN = fn.inc,
-                    output.signature = f.sig, clear.existing = TRUE, language = 'plr')
+                    output.signature = f.sig, clear.existing = TRUE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep=''))
     expect_equal(is.data.frame(res), TRUE)
@@ -174,7 +175,7 @@ test_that("Test output.signature", {
     tryCatch({
         f.sig <- function() return(list("Score" = "invalidType"))
         res <- db.gpapply(dat.1.col, output.name = .output.name, FUN = fn.inc,
-                    output.signature = f.sig, clear.existing = TRUE, language = 'plr')
+                    output.signature = f.sig, clear.existing = TRUE, language = .language)
         stop("can't be here")
     }, error = function(e) {
         expect_match(as.character(e), 'ERROR:  type "invalidtype" does not exist')
@@ -182,7 +183,7 @@ test_that("Test output.signature", {
     # 4. output.signature is any other invalid value
     tryCatch({
         res <- db.gpapply(dat.1.col, output.name = .output.name, FUN = fn.inc,
-                    output.signature = list(), clear.existing = TRUE, language = 'plr')
+                    output.signature = list(), clear.existing = TRUE, language = .language)
         stop("can't be here")
     }, error = function(e) {
         expect_match(as.character(e), 'ERROR:  ')
@@ -203,7 +204,7 @@ test_that("Test Function applyed to data", {
     .output.name <- 'test_FUNC'
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep=''))
     expect_equal(is.data.frame(res), TRUE)
@@ -212,7 +213,7 @@ test_that("Test Function applyed to data", {
     tryCatch({
         db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = function(x) return(fn.inc(x)), output.signature = list("Score" = "float"),
-                    clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
         stop("cann't be here")
     }, error = function(e) {
         expect_match(as.character(e), "ERROR:  R interpreter expression evaluation error")
@@ -228,14 +229,14 @@ test_that("Test clear.existing", {
     #0 clear.existing is TRUE, when the table doesn't exist (OK)
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                 FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
-                clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM pg_class WHERE relname='", .output.name, "';", sep=''))
     expect_equal(is.data.frame(res) && nrow(res) == 1, TRUE)
     #1 clear.existing is TRUE, when the table exists        (OK)
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                 FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
-                clear.existing = TRUE, case.sensitive = FALSE, language = 'plr')
+                clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM pg_class WHERE relname='", .output.name, "';", sep=''))
     expect_equal(is.data.frame(res) && nrow(res) == 1, TRUE)
@@ -248,7 +249,7 @@ test_that("Test clear.existing", {
 
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                 FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
-                clear.existing = FALSE, case.sensitive = FALSE, language = 'plr')
+                clear.existing = FALSE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM pg_class WHERE relname='", .output.name, "';", sep=''))
     expect_equal(is.data.frame(res) && nrow(res) == 1, TRUE)
@@ -257,7 +258,7 @@ test_that("Test clear.existing", {
     tryCatch({
         db.gpapply(dat.1.col, output.name = .output.name,
                 FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
-                clear.existing = FALSE, case.sensitive = FALSE, language = 'plr')
+                clear.existing = FALSE, case.sensitive = FALSE, language = .language)
         stop("can't be here")
     }, error = function(e) {
         expect_match(as.character(e), "the output table exists, but clear flag is not")
@@ -269,14 +270,47 @@ test_that("Test clear.existing", {
 # -----------------------------------------------------
 
 test_that("Test distributedOn", {
-
+    .output.name <- 'testDistribute'
+    # randomly
+    res <- db.gpapply(dat.1.col, output.name = .output.name, output.distributeOn = 'randomly',
+                    FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
+    expect_equal(res, NULL)
+    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep=''))
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat.1.col))
+    # replicated
+    res <- db.gpapply(dat.1.col, output.name = .output.name, output.distributeOn = 'replicated',
+                    FUN = function(x)x[1]+1, output.signature = list("Score" = "float"),
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
+    expect_equal(res, NULL)
+    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep=''))
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat.1.col))
+    # columns
 })
 
 test_that("Test language", {
     # the language should be 'plr' or 'plcontainer'
-    skip("skip lanuage")
+    skip("skip.language")
 })
 
+test_that("Test additional junk parameters", {
+    .output.name <- 'testJunkParameter'
+    .func <- function(x, junk1=NULL, junk2=NULL, junk3=NULL) {
+        return (x[1]+1)
+    }
+    # case sensitive
+    res <- db.gpapply(dat.1.col, output.name = .output.name,
+                    FUN = .func, output.signature = list("Score" = "float"),
+                    clear.existing = TRUE, case.sensitive = TRUE, language = .language,
+                    junk1 = 12, junk2 = "Hello", junk3 = list(id=1, name='world'))
+    expect_equal(res, NULL)
+    res <- db.q(paste("SELECT 1 FROM \"", .output.name, "\" WHERE \"Score\" IS NOT NULL;", sep=''))
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat.1.col))
+
+})
 # --------------------------------------------------------
 # consistency of database objects
 # --------------------------------------------------------
@@ -288,10 +322,34 @@ test_that("Test language", {
 # we should Run `DROP TYPE IF EXISTS "<GPTYPE>" CASCADE;`
 # The created function is always dropped as a dependency of gptype_xxx.
 test_that("Test consistency of database objects", {
-    tryCatch({
-    
-    }, finally = {
+    q.type <- "SELECT count(1) FROM pg_type WHERE typname like 'gptype_%';"
+    q.func <- "SELECT count(1) FROM pg_proc WHERE proname like 'gprfunc_%';"
 
+    q.type_func <- function() {
+        res <- db.q(q.type, verbose = FALSE)
+        expect_equal(is.data.frame(res) && nrow(res)==ncol(res), TRUE)
+        n.type <- nrow(res)
+        res <- db.q(q.func, verbose = FALSE)
+        expect_equal(is.data.frame(res) && nrow(res)==ncol(res), TRUE)
+        n.func <- nrow(res)
+        return (list(type=n.type, func=n.func))
+    }
+    res <- q.type_func()
+    old.type <- res$type
+    old.func <- res$func
+
+    tryCatch({
+    .output.name <- 'testConsistency'
+    .func <- function(x) stop("internal error by myself")
+    db.gpapply(dat.1.col, output.name = .output.name,
+                    FUN = .func, output.signature = list("Score" = "float"),
+                    clear.existing = TRUE, language = .language)
+    stop("can't be here")
+    }, error = function(e) {
+    }, finally = {
+        res <- q.type_func()
+        expect_equal(old.type, res$type)
+        expect_equal(old.func, res$func)
     })
 
 })

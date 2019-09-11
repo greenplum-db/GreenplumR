@@ -5,7 +5,7 @@
 
 # needs to test
 .generate.gpapply.query <- function(output.name, funName, param_list_str,
-                        relation_name, typeName, output.distributeOn, clear.existing){
+                        relation_name, typeName, clear.existing, output.distributeOn){
     if (is.null(output.name))
     {
         query <- sprintf("WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa;",
@@ -52,14 +52,14 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
         print(create_type_sql)
         db.q(create_type_sql)
     }
-
+    tryCatch({
     # generate function parameter str
     ar <- attributes(X)
     relation_name <- ar$.content
     # "col1 type1, col2 type2"
     # param_list_str_with_type <- paste(ar$.col.name, ar$.col.udt_name, collapse=", ")
     #CASE_SENSITIVE: relation_name, param_list_str
-    if (case.sensitive){
+    if (isTRUE(case.sensitive)) {
         if (!is.null(output.name))
             output.name <-  paste("\"", unlist(strsplit(output.name, '\\.')),"\"", sep='', collapse='.')
         # ar$.col.name <- paste("\"", ar$.col.name, "\"", sep='')
@@ -70,10 +70,6 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
             output.name <- tolower(output.name)
         param_list_str_no_type <- paste(ar$.col.name, collapse=", ")
     }
-    # case.sensitive is TRUE:  "\"col1\", \"col2\""
-    # case.sensitive is FALSE: "col1, col2"
-    # param_list_str_no_type <- paste(ar$.col.name, collapse=", ")
-    
 
     # Create function
     createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, Xattr=ar, args=list(...),
@@ -82,15 +78,19 @@ db.gpapply <- function(X, MARGIN=NULL, FUN = NULL, output.name=NULL, output.sign
     db.q(createStmt)
 
     # Run the generated query inside GPDB
-    query <- .generate.gpapply.query(output.name, .to.func.name(basename), param_list_str_no_type,
-                                relation_name, typeName, output.distributeOn, clear.existing)
+    query <- .generate.gpapply.query(output.name, funName = .to.func.name(basename), 
+                                    param_list_str = param_list_str_no_type, relation_name = relation_name,
+                                    typeName = typeName, clear.existing=clear.existing, output.distributeOn = output.distributeOn)
     print(query)
     results <- db.q(query, nrows = NULL)
-
+    
+    #END OF tryCatch
+    }, finally = {
     #drop type
     cleanString <- sprintf("DROP TYPE %s CASCADE;",typeName)
     db.q(cleanString)
-
+    })
+    
     return (results)
 
 }
