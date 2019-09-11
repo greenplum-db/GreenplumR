@@ -5,7 +5,11 @@ All indentations are 4 spaces.
 ### Breaking long lines and strings
 The limit on the length of lines is 80 columns and this is a strongly preferred limit.
 ### Braces and Spaces
-Put the opening brace last on the line. The exception is the top level function. Note the opening brace of a nested function puts the opening brace last on the line.
+Put the opening brace last on the line. The exception is the top level function. Note the opening brace of a nested function puts the opening brace last on the line. If the block contains only one statement, the block should be omitted. such as
+  ```r
+    if (bad)
+        stop("wrong")
+  ```
 ### Spaces
 * Use a space after these keywords:
   > `if, while, for, return`
