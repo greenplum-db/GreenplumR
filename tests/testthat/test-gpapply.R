@@ -288,6 +288,9 @@ test_that("Test distributedOn", {
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.1.col))
     # columns
+    .sql <- "SELECT attname FROM pg_class pc, gp_distribution_policy gp, pg_attribute pa"
+    .sql <- paste(.sql, " WHERE pc.oid=gp.localoid and pc.relname = '", sep='')
+    .sql <- paste(.sql, .output.name, "' and pa.attrelid=pc.oid and pa.attnum=ANY(gp.distkey);")
 })
 
 test_that("Test language", {
