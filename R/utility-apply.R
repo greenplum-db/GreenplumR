@@ -1,18 +1,19 @@
 
 # needs to test
-.to.type.name <- function(basename) {
+.to.type.name <- function(basename)
+{
     paste("gptype_", basename, sep = "")
 }
 
-.to.func.name <- function(basename) {
+.to.func.name <- function(basename)
+{
     paste("gprfunc_", basename, sep = "")
 }
 
-# TODO: is `output.name` allowed to be schema.table?
-#       now, output.name is assumed to be a single relation name
-.check.output.name <- function(output.name) {
+.check.output.name <- function(output.name)
+{
     if (is.null(output.name))
-        return(NULL)
+        return (NULL)
     if (!is.character(output.name))
         stop("output.name must be NULL or a charater")
     res <- regexpr("[a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)?", output.name, perl = FALSE)
@@ -21,7 +22,8 @@
         stop(paste("invalid output.name:", output.name))
 }
 
-.simplify.signature <- function(signature) {
+.simplify.signature <- function(signature)
+{
     if (is.null(signature) || is.list(signature))
         return (signature)
     if (is.function(signature))
@@ -31,22 +33,33 @@
 
     stop(paste("invalid signature:", signature))
 }
-.distribute.str <- function(distributeOn) {
-    if (is.null(distributeOn)) {
-        ""
-    } else if (is.character(distributeOn)) {
-        dist <- toupper(distributeOn)
-        if (dist == "RANDOMLY") "DISTRIBUTED RANDOMLY"
-        else if (dist == "REPLICATED") "DISTRIBUTED REPLICATED"
-        else stop("invalid distribute value")
-    } else if (is.list(distributeOn)) {
-        # DISTRIBUTED BY (column)
-        paste("DISTRIBUTED BY (", paste(distributeOn, collapse=", "), ")", sep="")
-    } else {
-        stop("invalid distributed value")
+
+.distribute.str <- function(distributeOn, case.sensitive)
+{
+    if (is.null(distributeOn))
+        return ("")
+    
+    # DISTRIBUTED BY (column)
+    if (is.list(distributeOn)) {
+        fields <- ifelse(case.sensitive,
+                    paste('"', distributeOn, '"', sep = '', collapse = ', '),
+                    paste(distributeOn, collapse = ', '))
+        return (paste("DISTRIBUTED BY (", fields, ")", sep = ""))
     }
+
+    if (is.character(distributeOn)) {
+        dist <- toupper(distributeOn)
+        if (dist == "RANDOMLY")
+            return ("DISTRIBUTED RANDOMLY")
+        if (dist == "REPLICATED") 
+            return ("DISTRIBUTED REPLICATED")
+        stop("invalid distribute value")
+    }
+    stop("invalid distributed value")
 }
-.clear.existing.table <- function(output.name, clear.existing) {
+
+.clear.existing.table <- function(output.name, clear.existing)
+{
     if (is.null(output.name))
         return ('')
     if (!is.character(output.name))
@@ -54,7 +67,7 @@
     if (!db.existsObject(output.name))
         return ('')
     if (is.logical(clear.existing) && isTRUE(clear.existing))
-        return (paste("DROP TABLE IF EXISTS ", output.name, ";", sep=''))
+        return (paste("DROP TABLE IF EXISTS ", output.name, ";", sep=""))
     # NZR truncate talbe if clear.existing is 'truncate',
     # but this doesn't work for greenplum. If we need to support the 'truncate'
     # value for clear.existing, just drop this table.
@@ -62,33 +75,30 @@
     #    return (paste("DROP TABLE '", output.name, "';"))
     stop("the output table exists, but clear flag is not set")
 }
-.extract.param.list <- function(param_list) {
+.extract.param.list <- function(param_list)
+{
     if (is.null(param_list) || length(param_list)==0)
         return ("")
     arg_str_array <- strsplit(deparse(param_list), ", .Names = ")[[1]]
-
-    if (length(arg_str_array) == 1)
-    {
-        listStr <- substr(arg_str_array[1], 6, nchar(arg_str_array[1]) - 1)
-    }
-    else if (length(arg_str_array) == 2)
-    {
-        listStr <- substr(arg_str_array[1], 16, nchar(arg_str_array[1]) - 1)
-    }
-    else
-    {
-        stop("The functon input argument must not inlcude '.Names'")
-    }
+    .n.array <- length(arg_str_array)
+    if (.n.array == 1)
+        return (substr(arg_str_array[1], 6, nchar(arg_str_array[1]) - 1))
+    if (.n.array == 2)
+        return (substr(arg_str_array[1], 16, nchar(arg_str_array[1]) - 1))
+    
+    stop("The functon input argument must not inlcude '.Names'")
 }
 
-.check.language <- function(language) {
+.check.language <- function(language)
+{
     if (is.null(language) || !is.character(language))
         stop("lanuage must be a character")
     if (language != 'plr' && language != 'plcontainer')
         stop(paste("invalid language:", language))
 }
 
-.create.type.sql <- function(typeName, signature_list, case.sensitive=FALSE) {
+.create.type.sql <- function(typeName, signature_list, case.sensitive=FALSE)
+{
     if (is.null(signature_list))
       return (NULL)
 
@@ -106,14 +116,16 @@
     return (typelist_str)
 }
 
-getRandomNameList <- function(n = 1) {
+getRandomNameList <- function(n = 1)
+{
   a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
   a <- paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
   a[1]
 }
 
-.create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer') {
- #generate output
+.create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')
+{
+    #generate output
     local_data_frame_str <- paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
     param.list.str <- paste(Xattr$.col.name, Xattr$.col.udt_name, collapse=", ")
     listStr <- .extract.param.list(args)
@@ -124,11 +136,11 @@ getRandomNameList <- function(n = 1) {
     funName <- .to.func.name(basename)
     funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
     localdf <- sprintf("df <- data.frame(%s)", local_data_frame_str)
-    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr);
+    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr)
 
-    #Question: CREATE OR REPLACE FUNCTION?
     createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
-                          funName, param.list.str, typeName, funBody, localdf, localcall, language);
+                          funName, param.list.str, typeName, funBody, localdf, localcall, language)
+    return (createStmt)
 }
 
 .create.r.wrapper2 <- function() {

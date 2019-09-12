@@ -92,6 +92,7 @@ test_that("Test .distribute.str", {
     expect_equal(.distribute.str('replicated'), "DISTRIBUTED REPLICATED")
     expect_equal(.distribute.str('rePLICated'), "DISTRIBUTED REPLICATED")
 
+    # randomName is seemed to be an invalid distributed string
     randomName <- random.name()
     .dist <- tryCatch({
         .distribute.str('invalid character')
@@ -101,8 +102,13 @@ test_that("Test .distribute.str", {
     expect_equal(.dist, randomName)
 
     # distributed by (a, b, c)
-    .dist <- .distribute.str(list("Apple", "Banana", "Cannon"))
+    .dist <- .distribute.str(list("Apple", "Banana", "Cannon"),
+                            case.sensitive = FALSE)
     expect_equal(.dist, "DISTRIBUTED BY (Apple, Banana, Cannon)")
+    # case sensitive
+    .dist <- .distribute.str(list("Apple", "Banana", "Cannon"),
+                            case.sensitive = TRUE)
+    expect_equal(.dist, 'DISTRIBUTED BY ("Apple", "Banana", "Cannon")')
 })
 
 test_that("Test .create.r.wrapper", {
