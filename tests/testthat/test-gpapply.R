@@ -399,12 +399,12 @@ test_that("Test consistency of database objects", {
 dat.test <- dat.mul
 # columns as the output table
 .col.chooser <- c(1, 2, 3, 5, 9)
-.signature <- list(id = 'int', sex = 'text', length = 'float', height = 'float', shell = 'float')
+.signature <- list(id = 'int', 'Sex' = 'text', 'Length' = 'float', height = 'float', shell = 'float')
 fn.inc <- function(x)
 {
     x$length <- x$length + 1
     x$height <- x$height - 1
-    return (x[, .col.chooser])
+    return (x[, c(1, 2, 3, 5, 9)])
 }
 # output.name is NULL
 test_that("MT-Test output.name is NULL", {
@@ -444,7 +444,7 @@ test_that("MT-Test output.name is a table name", {
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM \"", .output.name,
-                "\" WHERE \"Score\" IS NOT NULL;", sep = ""),
+                "\" WHERE \"Length\" IS NOT NULL;", sep = ""),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
@@ -456,7 +456,7 @@ test_that("MT-Test output.name is a table name", {
                     language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name,
-                " WHERE Score IS NOT NULL;", sep = ""),
+                " WHERE Length IS NOT NULL;", sep = ""),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
@@ -471,7 +471,7 @@ test_that("MT-Test output.name is schema.table", {
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM \"test_schema\".\"resultGPapply\" WHERE \"Score\" IS NOT NULL;"),
+    res <- db.q(paste("SELECT 1 FROM \"test_schema\".\"resultGPapply\" WHERE \"Length\" IS NOT NULL;"),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
@@ -482,7 +482,7 @@ test_that("MT-Test output.name is schema.table", {
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name,
-                " WHERE Score IS NOT NULL;", sep = ""), verbose = .verbose)
+                " WHERE Length IS NOT NULL;", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 
@@ -524,7 +524,7 @@ test_that("MT-Test output.signature", {
                     output.signature = f.sig, clear.existing = TRUE, language = .language)
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM ", .output.name,
-                " WHERE Score IS NOT NULL;", sep = ""), verbose = .verbose)
+                " WHERE Length IS NOT NULL;", sep = ""), verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 
@@ -561,10 +561,10 @@ test_that("MT-Test Function applyed to data", {
     # 2. FUN is an anonymous function
     .output.name <- 'test_FUNC'
     res <- db.gpapply(dat.test, output.name = .output.name,
-                    FUN = function(x) x[, .col.chooser], output.signature = .signature,
+                    FUN = function(x) x[, c(1, 2, 3, 5, 9)], output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep = ""),
+    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Length IS NOT NULL;", sep = ""),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
@@ -640,7 +640,7 @@ test_that("MT-Test distributedOn", {
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep = ""),
+    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Length IS NOT NULL;", sep = ""),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
@@ -649,7 +649,7 @@ test_that("MT-Test distributedOn", {
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Score IS NOT NULL;", sep = ""),
+    res <- db.q(paste("SELECT 1 FROM ", .output.name, " WHERE Length IS NOT NULL;", sep = ""),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
@@ -658,7 +658,7 @@ test_that("MT-Test distributedOn", {
     .sql <- paste(.sql, " WHERE pg_class.oid=gp.localoid and pg_class.relname = '", sep = "")
     .sql <- paste(.sql, tolower(.output.name),
             "' and pa.attrelid=pg_class.oid and pa.attnum=ANY(gp.distkey);", sep = "")
-    res <- db.gpapply(dat.test, output.name = .output.name, output.distributeOn = list(names(.signature)[c(1:3)]),
+    res <- db.gpapply(dat.test, output.name = .output.name, output.distributeOn = as.list(names(.signature)[c(1:3)]),
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
@@ -670,7 +670,9 @@ test_that("MT-Test distributedOn", {
 test_that("MT-Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
-        return (fn.inc(x))
+        x$length <- x$length + 1
+        x$height <- x$height - 1
+        return (x[, c(1, 2, 3, 5, 9)])
     }
     # case sensitive
     res <- db.gpapply(dat.test, output.name = .output.name,
@@ -680,7 +682,7 @@ test_that("MT-Test additional junk parameters", {
                     junk3 = list(id = 1, name = "world"))
     expect_equal(res, NULL)
     res <- db.q(paste('SELECT 1 FROM "', .output.name,
-                '" WHERE "Score" IS NOT NULL;', sep = ''),
+                '" WHERE "Length" IS NOT NULL;', sep = ''),
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
