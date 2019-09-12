@@ -1,121 +1,119 @@
 # GPTapply
 
-getRandomNameList <- function(n = 1) {
-  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
-  paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+.index.translate <- function(INDEX, ar)
+{
+    if (is.null(INDEX))
+        stop("INDEX value cannot be NULL")
+    if (is.integer(INDEX) || (is.double(INDEX) && floor(INDEX) == INDEX))
+        return (ar$.col.name[INDEX])
+    if (is.character(INDEX))
+        return (INDEX)
+    stop("INDEX value cannot be determined with value of type ", typeof(INDEX))
 }
 
-db.gptapply <- function(X, INDEX, FUN = NULL, output.name=NULL, output.signature=NULL,
-		clear.existing=FALSE, case.sensitive=FALSE,output.distributeOn=NULL,debugger.mode = FALSE, simplify = TRUE, language="plr", ...)
-{	
-	args <- list(...)
+#.generate.gptapply.query <- function(output.name, funName, param.name.list, param.group.list, relation_name, INDEX, typeName, output.distributeOn, clear.existing){
+#    if (is.null(output.name))
+#    {
+#        query <- sprintf("WITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa;",
+#                funName, param.name.list, param.group.list, relation_name, INDEX, typeName)
+#    }
+#    else
+#    {
+#        #add distributeOn
+#        query <- sprintf("CREATE TABLE %s AS\nWITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
+#                output.name, funName, param.name.list, param.group.list, relation_name, INDEX, typeName, .distribute.str(output.distributeOn))
+#        clearStmt <- .clear.existing.table(output.name, clear.existing)
+#        if (nchar(clearStmt) > 0)
+#                    query <- paste(clearStmt, query)
+#    }
+#
+#    return (query)
+#}
 
-	randomName <- getRandomNameList()[1]
 
-	typeName <- sprintf("gptype_%s", randomName)
-	if (!is.null(output.signature))
-	{
-		typelist_str <- sprintf("CREATE TYPE %s AS (\n", typeName)
-		typelist <- .simplify.signature(output.signature)
-		fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
-		typelist_str <- paste(typelist_str, fieldStr, "\n);", sep="")
-		print(typelist_str)
-		db.q(typelist_str)
-	}
-	
-	# generate function parameter str
-	ar <- attributes(X)
-	func_para_str <- ""
-	local_data_frame_str <- ""
-	call_udf_params <- ""
-	call_udf_inner_params <- ""
-	relation_name <- ar$.content
+db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE, case.sensitive = FALSE,
+        output.distributeOn = NULL, debugger.mode = FALSE, simplify = TRUE, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+{
 
-	if(is.null(INDEX))
-	{
-		stop("INDEX value cannot be NULL");
-	}
-	else if (is.integer(INDEX) || (is.double(INDEX) && floor(INDEX) == INDEX))
-	{
-		INDEX <- ar$.col.name[INDEX];
-	}
-	else if(!is.character(INDEX))
-	{
-		stop("INDEX value cannot be determined with value of type ", typeof(INDEX))
-	}
+    randomName <- getRandomNameList()
 
-	for (i in 1:length(ar$.col.name))
-	{
-		if (i > 1)
-		{
-			
-			local_data_frame_str <- paste(local_data_frame_str, ",", ar$.col.name[i], "=", ar$.col.name[i], sep="")
-			call_udf_params <- paste(call_udf_params, ", ", ar$.col.name[i], sep="")
-			if(toupper(ar$.col.name[i]) == toupper(INDEX))
-			{
-				call_udf_inner_params <- paste(call_udf_inner_params, ", ", ar$.col.name[i], sep="")
-				func_para_str <- paste(func_para_str, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], sep="")
-			}
-			else
-			{
-				call_udf_inner_params <- paste(call_udf_inner_params, " , array_agg(", ar$.col.name[i], ") AS ", ar$.col.name[i], sep="")
-				func_para_str <- paste(func_para_str, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep="")
-			}
-		}
-		else
-		{
-			local_data_frame_str <- paste(local_data_frame_str, ar$.col.name[i], "=", ar$.col.name[i], sep="")
-			call_udf_params <- paste(call_udf_params, ar$.col.name[i], sep="")
+    #create type
+    typeName <- sprintf("gptype_%s", randomName)
+    if (is.null(output.signature)) {
+        # signature is null
+        stop("output.signature is null")
+    } else {
+        create_type_str <- .create.type.sql(typeName, output.signature, case.sensitive)
+        db.q(create_type_str)
+    }
 
-			if(toupper(ar$.col.name[i]) == toupper(INDEX))
-			{
-				call_udf_inner_params <- paste(call_udf_inner_params, ar$.col.name[i], sep="")
-				func_para_str <- paste(func_para_str, ar$.col.name[i], " ", ar$.col.udt_name[i], sep="")
-			}
-			else
-			{
-				call_udf_inner_params <- paste(call_udf_inner_params, "array_agg(", ar$.col.name[i], ") AS ", ar$.col.name[i], sep="")
-				func_para_str <- paste(func_para_str, ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep="")
-			}
-		}
-	}
-	#print(call_udf_params)
-	#print(call_udf_inner_params)
-	
-	listStr <- .extract.param.list(args)
-	if (nchar(listStr)>0)
-		listStr <- paste(", ", listStr, sep="")
+    # generate function parameter str
+    ar <- attributes(X)
+    param.type.list <- ""
+    param.group.list <- ""
+    relation_name <- ar$.content
 
-	funName <- sprintf("gprfunc_%s", randomName)
-	funBody <- paste("# container:  plc_r_shared\ngplocalf <- ",paste(deparse(FUN), collapse="\n"))
-	localdf <- sprintf("df <- data.frame(%s)\n", local_data_frame_str)
-	localcall <- sprintf("do.call(gplocalf, list(df %s))", listStr);
+    param.name.list <- paste(ar$.col.name, collapse = ", ")
 
-	createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$ %s\n %s\ return(%s)\n $$ LANGUAGE '%s';",
-	funName, func_para_str, typeName, funBody, localdf, localcall, language);
+    if (case.sensitive) {
+        if (!is.null(output.name))
+            output.name <-  paste('"', output.name, '"', sep = '')
+        ar$.col.name <- paste('"', ar$.col.name, '"', sep = '')
+    }
 
-	#print(createStmt)
-	db.q(createStmt)
+    INDEX <- .index.translate(INDEX, ar)
+    upperIndex <- toupper(INDEX)
+    for (i in 1:length(ar$.col.name)) {
+        if (i > 1) {
+            if (toupper(ar$.col.name[i]) == upperIndex) {
+                param.group.list <- paste(param.group.list, ", ", ar$.col.name[i], sep = "")
+                param.type.list <- paste(param.type.list, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], sep = "")
+            }
+            else {
+                param.group.list <- paste(param.group.list, " , array_agg(", ar$.col.name[i], ") AS ", ar$.col.name[i], sep = "")
+                param.type.list <- paste(param.type.list, ", ", ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep = "")
+            }
+        }
+        else {
+            if (toupper(ar$.col.name[i]) == upperIndex) {
+                param.group.list <- paste(param.group.list, ar$.col.name[i], sep = "")
+                param.type.list <- paste(param.type.list, ar$.col.name[i], " ", ar$.col.udt_name[i], sep = "")
+            }
+            else {
+                param.group.list <- paste(param.group.list, "array_agg(", ar$.col.name[i], ") AS ", ar$.col.name[i], sep = "")
+                param.type.list <- paste(param.type.list, ar$.col.name[i], " ", ar$.col.udt_name[i], "[]", sep = "")
+            }
+        }
+    }
+    #print(param.name.list)
+    #print(param.group.list)
 
-	if (is.null(output.name))
-	{
-		query <- sprintf("WITH a AS (SELECT (%s(%s)) AS b FROM (SELECT %s FROM %s GROUP BY %s) tmptbl) SELECT (b::%s).* FROM a;",
-				funName, call_udf_params, call_udf_inner_params, relation_name, INDEX, typeName)
-	}
-	else
-	{
-		query <- sprintf("CREATE TABLE %s AS WITH a AS (SELECT (%s(%s)) AS b FROM (SELECT %s FROM %s GROUP BY %s) tmptbl) SELECT (b::%s).* FROM a;",
-				output.name, funName, call_udf_params, call_udf_inner_params, relation_name, INDEX, typeName)
-	}
-	#print(query)
+    createStmt <- .create.r.wrapper(randomName, FUN = FUN, col.names = ar$.col.name, param.list.str = param.type.list,
+                    args = list(...), runtime.id = runtime.id, language = language)
+    #print(createStmt)
+    db.q(createStmt)
 
-	results <- db.q(query, nrows = NULL)
+    # STEP: Create SQL
+    funName <- paste('gprfunc_', randomName, sep = '')
+    if (is.null(output.name))
+    {
+        query <- sprintf("WITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa;",
+                funName, param.name.list, param.group.list, relation_name, INDEX, typeName)
+    }
+    else
+    {
+        query <- sprintf("CREATE TABLE %s AS\nWITH gpdbtmpa AS (\nSELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s GROUP BY %s) tmptbl\n)\nSELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
+                output.name, funName, param.name.list, param.group.list, relation_name, INDEX, typeName)
+        clearStmt <- .clear.existing.table(output.name, clear.existing)
+        if (nchar(clearStmt) > 0)
+                    query <- paste(clearStmt, query)
+    }
+    #print(query)
+    results <- db.q(query, nrows = NULL)
 
-	cleanString <- sprintf("DROP TYPE %s CASCADE;",typeName)
+    # STEP: Do cleanup
+    cleanString <- sprintf("DROP TYPE %s CASCADE;",typeName)
+    db.q(cleanString)
 
-	print(cleanString)
-	db.q(cleanString)
-
-	return(results)
-
+    return (results)
 }
