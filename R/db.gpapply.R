@@ -3,23 +3,22 @@
 #   If the table has too many columns, and the function only wants few of them, we'd better pass
 #   columns as few as possible provided by user.
 
-# needs to test
-.generate.gpapply.query <- function(output.name, funName, param_list_str,
+# 
+.generate.gpapply.query <- function(output.name, funName, func.param.list, select.list.str,
                         relation_name, typeName, clear.existing, distribute.str)
 {
     if (is.null(output.name)) {
         query <- sprintf("WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa;",
-                funName, param_list_str, param_list_str, relation_name, typeName)
+                funName, func.param.list, select.list.str, relation_name, typeName)
     }
     else {
         query <- sprintf("CREATE TABLE %s AS WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
-                output.name, funName, param_list_str, param_list_str, relation_name, typeName, distribute.str)
+                output.name, funName, func.param.list, select.list.str, relation_name, typeName, distribute.str)
 
         clearStmt <- .clear.existing.table(output.name, clear.existing)
         if (nchar(clearStmt) > 0)
             query <- paste(clearStmt, query, sep='\n');
     }
-
     return (query)
 }
 
@@ -60,17 +59,20 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
         if (isTRUE(case.sensitive)) {
             if (!is.null(output.name))
                 output.name <-  paste('"', unlist(strsplit(output.name, '\\.')),'"', sep='', collapse='.')
-            param_list_str_no_type <- paste('"', ar$.col.name, '"', sep='', collapse=', ')
         } else {
             # if not case sensitive, all default names created by postgresql are lower case
             if (!is.null(output.name))
                 output.name <- tolower(output.name)
-            param_list_str_no_type <- paste(ar$.col.name, collapse=", ")
         }
+        func.param.list <- paste(ar$.col.name, collapse=", ")
+        select.list.str <- .select.fields.list(ar$.col.name)
 
         # Create function
-        createStmt <- .create.r.wrapper(basename=basename, FUN=FUN, Xattr=ar, args=list(...),
-                                        runtime.id=runtime.id, language=language)
+        createStmt <- .create.r.wrapper2(basename=basename, FUN=FUN,
+                                selected.type.list = .selected.type.list(ar),
+                                selected.equal.list = .selected.equal.list(ar$.col.name),
+                                args=list(...), runtime.id=runtime.id,
+                                language=language)
         db.q(createStmt, verbose = FALSE)
 
         # Run the generated query inside GPDB
@@ -78,7 +80,8 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
                                     case.sensitive = case.sensitive)
         query <- .generate.gpapply.query(output.name,
                             funName = .to.func.name(basename),
-                            param_list_str = param_list_str_no_type,
+                            func.param.list = func.param.list,
+                            select.list.str = select.list.str,
                             relation_name = relation_name,
                             typeName = typeName,
                             clear.existing = clear.existing,
