@@ -7,11 +7,11 @@
 .generate.gpapply.query <- function(output.name, funName, param_list_str,
                         relation_name, typeName, clear.existing, distribute.str)
 {
-    if (is.null(output.name))
+    if (is.null(output.name)) {
         query <- sprintf("WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa;",
                 funName, param_list_str, param_list_str, relation_name, typeName)
-    else
-    {
+    }
+    else {
         query <- sprintf("CREATE TABLE %s AS WITH gpdbtmpa AS (SELECT (%s(%s)) AS gpdbtmpb FROM (SELECT %s FROM %s) tmptbl) SELECT (gpdbtmpb::%s).* FROM gpdbtmpa %s;",
                 output.name, funName, param_list_str, param_list_str, relation_name, typeName, distribute.str)
 
@@ -59,8 +59,8 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
         #CASE_SENSITIVE: relation_name, param_list_str
         if (isTRUE(case.sensitive)) {
             if (!is.null(output.name))
-                output.name <-  paste("\"", unlist(strsplit(output.name, "\\.")),"\"", sep="", collapse=".")
-            param_list_str_no_type <- paste("\"", ar$.col.name, "\"", sep="", collapse=", ")
+                output.name <-  paste('"', unlist(strsplit(output.name, '\\.')),'"', sep='', collapse='.')
+            param_list_str_no_type <- paste('"', ar$.col.name, '"', sep='', collapse=', ')
         } else {
             # if not case sensitive, all default names created by postgresql are lower case
             if (!is.null(output.name))
@@ -85,14 +85,14 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
                             distribute.str = distribute.str)
 
         results <- db.q(query, nrows = NULL, verbose = FALSE)
-        
+
     #END OF tryCatch
     }, finally = {
         #drop type
         cleanString <- sprintf("DROP TYPE %s CASCADE;", typeName)
         db.q(cleanString, verbose = FALSE)
     })
-    
+
     return (results)
 }
 

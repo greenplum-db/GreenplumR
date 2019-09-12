@@ -65,7 +65,7 @@ test_that("Test prepare", {
 # output.name is NULL
 test_that("Test output.name is NULL", {
     .output.name <- NULL
-    
+
     # case sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
@@ -122,7 +122,7 @@ test_that("Test output.name is a table name", {
 # output.name is not NULL, and it is a single table name
 test_that("Test output.name is schema.table", {
     .output.name <- 'test_schema.resultGPapply'
-    
+
     # case sensitive
     res <- db.gpapply(dat.1.col, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
@@ -312,7 +312,7 @@ test_that("Test distributedOn", {
     # columns
     .sql <- "SELECT attname FROM pg_class, gp_distribution_policy gp, pg_attribute pa"
     .sql <- paste(.sql, " WHERE pg_class.oid=gp.localoid and pg_class.relname = '", sep = "")
-    .sql <- paste(.sql, tolower(.output.name), 
+    .sql <- paste(.sql, tolower(.output.name),
             "' and pa.attrelid=pg_class.oid and pa.attnum=ANY(gp.distkey);", sep = "")
     res <- db.gpapply(dat.1.col, output.name = .output.name, output.distributeOn = list(names(.signature)[1]),
                     FUN = fn.inc, output.signature = .signature,
@@ -353,7 +353,7 @@ test_that("Test additional junk parameters", {
 # the whole/most steps are
 # Create Type => Create Function => Drop existing Table
 #   => Create Table => Drop Type & Function
-# 
+#
 # When the function gpapply/gptapply returns success or with error,
 # we should Run `DROP TYPE IF EXISTS "<GPTYPE>" CASCADE;`
 # The created function is always dropped as a dependency of gptype_xxx.

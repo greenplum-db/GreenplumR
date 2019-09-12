@@ -134,7 +134,7 @@ test_that("Test .create.r.wrapper", {
     # Create Type and Create Function
     db.q(.create.type.sql(typeName, signature_list=.signature), verbose=FALSE)
     db.q(.sql, verbose=FALSE)
-    
+
     n.type <- db.q(paste("SELECT typname FROM pg_type WHERE typname=lower('", typeName, "');", sep=""), verbose=FALSE)
     n.func <- db.q(paste("SELECT proname FROM pg_proc WHERE proname=lower('", funName, "');", sep=""), verbose=FALSE)
     expect_equal(nrow(n.type), 1)

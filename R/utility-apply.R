@@ -38,7 +38,7 @@
 {
     if (is.null(distributeOn))
         return ("")
-    
+
     # DISTRIBUTED BY (column)
     if (is.list(distributeOn)) {
         fields <- ifelse(case.sensitive,
@@ -51,7 +51,7 @@
         dist <- toupper(distributeOn)
         if (dist == "RANDOMLY")
             return ("DISTRIBUTED RANDOMLY")
-        if (dist == "REPLICATED") 
+        if (dist == "REPLICATED")
             return ("DISTRIBUTED REPLICATED")
         stop("invalid distribute value")
     }
@@ -79,14 +79,8 @@
 {
     if (is.null(param_list) || length(param_list)==0)
         return ("")
-    arg_str_array <- strsplit(deparse(param_list), ", .Names = ")[[1]]
-    .n.array <- length(arg_str_array)
-    if (.n.array == 1)
-        return (substr(arg_str_array[1], 6, nchar(arg_str_array[1]) - 1))
-    if (.n.array == 2)
-        return (substr(arg_str_array[1], 16, nchar(arg_str_array[1]) - 1))
-    
-    stop("The functon input argument must not inlcude '.Names'")
+    str <- deparse(substitute(param_list))
+    return (substr(str, 6, nchar(str) - 1))
 }
 
 .check.language <- function(language)
@@ -118,9 +112,9 @@
 
 getRandomNameList <- function(n = 1)
 {
-  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
-  a <- paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
-  a[1]
+    a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+    a <- paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+    a[1]
 }
 
 .create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')
