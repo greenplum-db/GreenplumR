@@ -395,7 +395,6 @@ test_that("Test additional junk parameters", {
     expect_equal(nrow(res), nrow(res2))
 })
 
-
 # --------------------------------------------------------------------------
 # MULTIPLE COLUMNS TABLE
 # --------------------------------------------------------------------------
@@ -515,6 +514,7 @@ test_that("MT-Test output.signature", {
     }, error = function(e) {
         expect_match(as.character(e), 'ERROR:  type "invalidtype" does not exist')
     })
+
     # 4. output.signature is any other invalid value
     tryCatch({
         res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name, FUN = fn.inc,
@@ -523,6 +523,26 @@ test_that("MT-Test output.signature", {
     }, error = function(e) {
         expect_match(as.character(e), 'ERROR:  ')
     })
+
+    # 5. output.signature has duplicate elements, case not sensitive
+    .sig <- list('A'='int', a='text')
+    tryCatch({
+        res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name, FUN = fn.inc,
+                    output.signature = .sig, case.sensitive = FALSE, clear.existing = FALSE, language = .language)
+        stop("can't be here")
+    }, error = function(e) {
+        expect_match(as.character(e), 'duplicated signature:')
+    })
+
+    # 6. output.signature has duplciate elements, case-sensitive
+    .sig <- list(id = 'int', 'ID' = 'text', 'Length' = 'float', 'Rings' = 'int')
+    res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name, FUN = fn.inc,
+                output.signature = .sig, case.sensitive = TRUE, clear.existing = TRUE, language = .language)
+    expect_equal(res, NULL)
+    res <- db.q(paste("SELECT * FROM \"", .output.name,
+                "\" WHERE \"Length\" IS NOT NULL;", sep = ""), verbose = .verbose)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat.test))
 })
 
 test_that("MT-Test Function applyed to data", {
@@ -665,4 +685,42 @@ test_that("MT-Test additional junk parameters", {
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 })
+
+# --------------------------------------------------------------------------
+# ORIGINAL DATA HAS DUPLICATED COLUMNS (case.sensitive)
+# --------------------------------------------------------------------------
+
+dat <- data.frame(iD = c(1,2,2,3,3), ID = c("a","b","ab","c","ad"))
+tname <- "dup"
+db.q("DROP TABLE IF EXISTS dup;")
+dat.test <- as.db.data.frame(dat, table.name = tname, verbose = .verbose)
+
+fn.inc <- function(x)
+{
+    x$iD <- x$iD + 100
+    return (x)
+}
+
+test_that("duplicated column table", {
+    .output.name <- NULL
+    #case sensitive
+    .signature <- list("a" = "int", "A" = "text")
+    .index <- "ID"
+    res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
+                    FUN = fn.inc, output.signature = .signature,
+                    clear.existing = TRUE, case.sensitive = TRUE, language = .language)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat))
+    expect_equal(ncol(res), ncol(dat))
+
+    #case not sensitive
+    .signature <- list("a" = "int", "B" = "text")
+    res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
+                    FUN = fn.inc, output.signature = .signature,
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat))
+    expect_equal(ncol(res), ncol(dat))
+})
+
 db.disconnect(cid)

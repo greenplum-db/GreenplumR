@@ -3,7 +3,6 @@
 #   If the table has too many columns, and the function only wants few of them, we'd better pass
 #   columns as few as possible provided by user.
 
-# 
 .generate.gpapply.query <- function(output.name, funName, func.param.list, select.list.str,
                         relation_name, typeName, clear.existing, distribute.str)
 {
@@ -64,7 +63,8 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
             if (!is.null(output.name))
                 output.name <- tolower(output.name)
         }
-        func.param.list <- paste(ar$.col.name, collapse=", ")
+        
+        func.param.list <- .type.fields.list(ar$.col.name)
         select.list.str <- .select.fields.list(ar$.col.name)
 
         # Create function

@@ -74,6 +74,7 @@
     #    return (paste("DROP TABLE '", output.name, "';"))
     stop("the output table exists, but clear flag is not set")
 }
+
 .extract.param.list <- function(param_list)
 {
     if (is.null(param_list) || length(param_list)==0)
@@ -99,11 +100,16 @@
     typelist_str <- sprintf("CREATE TYPE %s AS (\n", typeName)
     typelist <- .simplify.signature(signature_list)
 
-    if (isTRUE(case.sensitive))
+    if (isTRUE(case.sensitive)){
+        if (isTRUE(any(duplicated(names(typelist)))))
+            stop(paste("duplicated signature:", paste(names(typelist), collapse=", ")))
         fieldStr <- paste("\"", names(typelist), "\" ", typelist, sep="", collapse=",\n")
-    else
+    }
+    else{
+        if (isTRUE(any(duplicated(tolower(names(typelist))))))
+            stop(paste("duplicated signature:", paste(names(typelist), collapse=", ")))
         fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
-
+    }
     typelist_str <- paste(typelist_str, fieldStr, "\n);", collapse="")
 
     return (typelist_str)
@@ -128,7 +134,7 @@ getRandomNameList <- function(n = 1)
     paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
 }
 
-# project of select clause
+# project of select clause - gpapply
 .select.fields.list <- function(col.name)
 {
     paste(lapply(col.name, function(i)
@@ -136,8 +142,35 @@ getRandomNameList <- function(n = 1)
                 # if column is lower case or non-case-sensitive
                 i,
                 # column is case sensitive
-                paste('"', i, '" AS ', i, sep = ''))
+                paste('"', i, '" AS "', i, '"', sep = ''))
         ), sep = '', collapse = ', ')
+}
+
+.type.fields.list <- function(col.name){
+    paste(lapply(col.name, function(i)
+            ifelse(tolower(i) == i,
+                # if column is lower case or non-case-sensitive
+                i,
+                # column is case sensitive
+                paste('"',i,'"', sep=''))
+        ), sep = '', collapse = ', ')
+}
+
+# project of select clause - gptapply
+.to.type.field <- function(col.name, udt.name, isIndex) {
+    return (paste('"', col.name, '" ', udt.name,
+                ifelse(isIndex, '', '[]'), sep = ''))
+}
+
+.to.group.field <- function(col.name, isIndex) {
+    if (!isIndex)
+        if (tolower(col.name) != col.name)
+            return (paste('array_agg("', col.name, '") AS "', col.name, '"', sep = ''))
+        else
+            return (paste('array_agg("', col.name, '") AS ', col.name, sep = ''))
+    if (tolower(col.name) == col.name)
+        return (col.name)
+    return (paste('"', col.name, '" AS "', col.name, '"', sep = ''))
 }
 
 .create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')

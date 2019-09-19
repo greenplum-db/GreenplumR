@@ -43,11 +43,10 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
 
     basename <- getRandomNameList()
     # generate function parameter str
-
     #create returned type if output.signature is not null
     typeName <- .to.type.name(basename)
     if (is.null(output.signature)) {
-        # TODO: signaturee is null
+        # TODO: signature is null
         stop("NULL signature, not impl")
     } else {
         create_type_str <- .create.type.sql(typeName, output.signature, case.sensitive = case.sensitive)
@@ -57,7 +56,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     tryCatch({
         ar <- attributes(X)
         relation_name <- ar$.content
-        param.name.list <- paste(ar$.col.name, collapse = ", ")
+        param.name.list <- .type.fields.list(ar$.col.name)
         if (isTRUE(case.sensitive)) {
             if (!is.null(output.name))
                 output.name <-  paste('"', unlist(strsplit(output.name, '\\.')),'"', sep='', collapse='.')
@@ -68,19 +67,6 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
         }
         field.names <- paste('"', ar$.col.name, '"', sep = '')
         INDEX <- .index.translate(INDEX, ar)
-        
-        .to.type.field <- function(col.name, udt.name, isIndex) {
-            return (paste('"', col.name, '" ', udt.name,
-                        ifelse(isIndex, '', '[]'), sep = ''))
-        }
-        .to.group.field <- function(col.name, isIndex) {
-            if (!isIndex)
-                return (paste('array_agg("', col.name, '") AS ', col.name, sep = ''))
-            if (tolower(col.name) == col.name)
-                return (col.name)
-            return (paste('"', col.name, '" AS ', col.name, sep = ''))
-        }
-        
         # param.type.list used as the input parameters of the created function
         # parameter names should be double quoted, so they are case-sensitive
         param.type.list <- ""
@@ -125,7 +111,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                         query <- paste(clearStmt, query)
         }
         results <- db.q(query, nrows = NULL, verbose = FALSE)
-    
+
     #END OF tryCatch
     }, finally = {
         # STEP: Do cleanup
