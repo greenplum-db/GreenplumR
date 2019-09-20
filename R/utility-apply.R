@@ -1,4 +1,3 @@
-
 # needs to test
 .to.type.name <- function(basename)
 {
@@ -75,6 +74,7 @@
     #    return (paste("DROP TABLE '", output.name, "';"))
     stop("the output table exists, but clear flag is not set")
 }
+
 .extract.param.list <- function(param_list)
 {
     if (is.null(param_list) || length(param_list)==0)
@@ -100,11 +100,16 @@
     typelist_str <- sprintf("CREATE TYPE %s AS (\n", typeName)
     typelist <- .simplify.signature(signature_list)
 
-    if (isTRUE(case.sensitive))
+    if (isTRUE(case.sensitive)){
+        if (isTRUE(any(duplicated(names(typelist)))))
+            stop(paste("duplicated signature:", paste(names(typelist), collapse=", ")))
         fieldStr <- paste("\"", names(typelist), "\" ", typelist, sep="", collapse=",\n")
-    else
+    }
+    else{
+        if (isTRUE(any(duplicated(tolower(names(typelist))))))
+            stop(paste("duplicated signature:", paste(names(typelist), collapse=", ")))
         fieldStr <- paste(names(typelist), typelist, sep=" ", collapse=",\n")
-
+    }
     typelist_str <- paste(typelist_str, fieldStr, "\n);", collapse="")
 
     return (typelist_str)
@@ -117,11 +122,62 @@ getRandomNameList <- function(n = 1)
     a[1]
 }
 
+# construction of data.frame
+.selected.equal.list <- function(col.name)
+{
+    paste(col.name, col.name, sep = '=', collapse = ', ')
+}
+
+# parameter of created function
+.selected.type.list <- function(Xattr)
+{
+    paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
+}
+
+# project of select clause - gpapply
+.select.fields.list <- function(col.name)
+{
+    paste(lapply(col.name, function(i)
+            ifelse(tolower(i)==i, 
+                # if column is lower case or non-case-sensitive
+                i,
+                # column is case sensitive
+                paste('"', i, '" AS "', i, '"', sep = ''))
+        ), sep = '', collapse = ', ')
+}
+
+.type.fields.list <- function(col.name){
+    paste(lapply(col.name, function(i)
+            ifelse(tolower(i) == i,
+                # if column is lower case or non-case-sensitive
+                i,
+                # column is case sensitive
+                paste('"',i,'"', sep=''))
+        ), sep = '', collapse = ', ')
+}
+
+# project of select clause - gptapply
+.to.type.field <- function(col.name, udt.name, isIndex) {
+    return (paste('"', col.name, '" ', udt.name,
+                ifelse(isIndex, '', '[]'), sep = ''))
+}
+
+.to.group.field <- function(col.name, isIndex) {
+    if (!isIndex)
+        if (tolower(col.name) != col.name)
+            return (paste('array_agg("', col.name, '") AS "', col.name, '"', sep = ''))
+        else
+            return (paste('array_agg("', col.name, '") AS ', col.name, sep = ''))
+    if (tolower(col.name) == col.name)
+        return (col.name)
+    return (paste('"', col.name, '" AS "', col.name, '"', sep = ''))
+}
+
 .create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')
 {
     #generate output
     local_data_frame_str <- paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
-    param.list.str <- paste(Xattr$.col.name, Xattr$.col.udt_name, collapse=", ")
+    param.list.str <- paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
     listStr <- .extract.param.list(args)
     if (nchar(listStr)>0)
         listStr <- paste(', ', listStr, sep='')
@@ -137,6 +193,19 @@ getRandomNameList <- function(n = 1)
     return (createStmt)
 }
 
-.create.r.wrapper2 <- function() {
+# selected.type.list should be `"field1" type1 (, "filed.x" typex)*
+# double quoted field name make it case sensitive in UDF 
+.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, args, runtime.id, language) {
+    typeName <- .to.type.name(basename)
+    funName <- .to.func.name(basename)
+    listStr <- .extract.param.list(args)
+    if (nchar(listStr)>0)
+        listStr <- paste(', ', listStr, sep='')
+    funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
+    localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
+    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr)
 
+    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
+                          funName, selected.type.list, typeName, funBody, localdf, localcall, language)
+    return (createStmt)
 }

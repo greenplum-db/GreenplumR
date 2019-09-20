@@ -9,6 +9,7 @@ env <- new.env(parent = globalenv())
 #.port = get('pivotalr_port', envir=env)
 .verbose <- FALSE
 
+.host <- '172.17.0.1'
 .host <- 'localhost'
 .dbname <- "d_apply"
 .port <- 15432
@@ -28,7 +29,10 @@ db.q(paste('DROP TABLE IF EXISTS "', tname.mul.col, '";', sep = ''), verbose = .
 
 # prepare test table
 .dat.1 <- as.data.frame(dat$height)
-names(.dat.1) <- c('height')
+names(.dat.1) <- c('Height')
+dat.name <- names(dat)
+dat.name[2] <- toupper(dat.name[2])
+names(dat) <- dat.name
 dat.1 <- as.db.data.frame(.dat.1, table.name = tname.1.col, verbose = .verbose)
 dat.mul <- as.db.data.frame(dat, table.name = tname.mul.col, verbose = .verbose)
 
@@ -59,7 +63,8 @@ test_that("Test prepare", {
 # test table has only one column
 dat.test <- dat.1
 .signature <- list("Score" = "float")
-fn.inc <- function(x) {
+fn.inc <- function(x)
+{
     return (x[1] + 1)
 }
 # ---------------------------------------------------------------
@@ -538,6 +543,7 @@ test_that("MT-Test output.signature", {
     }, error = function(e) {
         expect_match(as.character(e), 'ERROR:  type "invalidtype" does not exist')
     })
+
     # 4. output.signature is any other invalid value
     tryCatch({
         res <- db.gpapply(dat.test, output.name = .output.name, FUN = fn.inc,
@@ -546,6 +552,26 @@ test_that("MT-Test output.signature", {
     }, error = function(e) {
         expect_match(as.character(e), 'ERROR:  ')
     })
+
+    # 5. output.signature has duplicate elements, case not sensitive
+    .sig <- list('A'='int', a='text')
+    tryCatch({
+        res <- db.gpapply(dat.test, output.name = .output.name, FUN = fn.inc,
+                    output.signature = .sig, case.sensitive = FALSE, clear.existing = FALSE, language = .language)
+        stop("can't be here")
+    }, error = function(e) {
+        expect_match(as.character(e), 'duplicated signature:')
+    })
+
+    # 6. output.signature has duplciate elements, case-sensitive
+    .sig <- list(id = 'int', 'ID' = 'text', 'Length' = 'float', height = 'float', shell = 'float')
+    res <- db.gpapply(dat.test, output.name = .output.name, FUN = fn.inc,
+                output.signature = .sig, case.sensitive = TRUE, clear.existing = TRUE, language = .language)
+    expect_equal(res, NULL)
+    res <- db.q(paste("SELECT 1 FROM \"", .output.name,
+                "\" WHERE \"Length\" IS NOT NULL;", sep = ""), verbose = .verbose)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat.test))
 })
 
 test_that("MT-Test Function applyed to data", {
@@ -654,13 +680,14 @@ test_that("MT-Test distributedOn", {
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
     # columns
+    .case.sensitive <- TRUE
     .sql <- "SELECT attname FROM pg_class, gp_distribution_policy gp, pg_attribute pa"
     .sql <- paste(.sql, " WHERE pg_class.oid=gp.localoid and pg_class.relname = '", sep = "")
-    .sql <- paste(.sql, tolower(.output.name),
+    .sql <- paste(.sql, ifelse(.case.sensitive, .output.name, tolower(.output.name)),
             "' and pa.attrelid=pg_class.oid and pa.attnum=ANY(gp.distkey);", sep = "")
     res <- db.gpapply(dat.test, output.name = .output.name, output.distributeOn = as.list(names(.signature)[c(1:3)]),
                     FUN = fn.inc, output.signature = .signature,
-                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
+                    clear.existing = TRUE, case.sensitive = .case.sensitive, language = .language)
     expect_equal(res, NULL)
     res <- db.q(.sql, verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
@@ -732,4 +759,40 @@ test_that("MT-Test consistency of database objects", {
 })
 
 
+# --------------------------------------------------------------------------
+# ORIGINAL DATA HAS DUPLICATED COLUMNS (case.sensitive)
+# --------------------------------------------------------------------------
+
+dat <- data.frame(iD = c(1,2,2,3,3), ID = c("a","b","ab","c","ad"))
+tname <- "dup"
+db.q("DROP TABLE IF EXISTS dup;", verbose = .verbose)
+dat.test <- as.db.data.frame(dat, table.name = tname, verbose = .verbose)
+
+fn.inc <- function(x)
+{
+    x$iD <- x$iD + 100
+    return (x)
+}
+
+test_that("duplicated column table", {
+    .output.name <- NULL
+    #case sensitive
+    .signature <- list("a" = "int", "A" = "text")
+    .index <- "ID"
+    res <- db.gpapply(dat.test, output.name = .output.name,
+                    FUN = fn.inc, output.signature = .signature,
+                    clear.existing = TRUE, case.sensitive = TRUE, language = .language)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat))
+    expect_equal(ncol(res), ncol(dat))
+
+    #case not sensitive
+    .signature <- list("a" = "int", "B" = "text")
+    res <- db.gpapply(dat.test, output.name = .output.name,
+                    FUN = fn.inc, output.signature = .signature,
+                    clear.existing = TRUE, case.sensitive = FALSE, language = .language)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat))
+    expect_equal(ncol(res), ncol(dat))
+})
 db.disconnect(cid, verbose = .verbose)
