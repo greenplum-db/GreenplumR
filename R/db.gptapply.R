@@ -31,7 +31,7 @@
 # 3. Execute the r-wrapper-function
 # 4. DROP TYPE gptype_xxx CASCADE
 db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE, case.sensitive = FALSE,
-        output.distributeOn = NULL, debugger.mode = FALSE, simplify = TRUE, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+        output.distributeOn = NULL, runtime.id = "plc_r_shared", language = "plcontainer", ...)
 {
     # handle case when colnames of X are not all lower, and case.sensitive = FALSE
     if (is.null(X) || !is.db.data.frame(X))

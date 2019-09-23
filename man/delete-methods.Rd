@@ -43,9 +43,6 @@ FALSE)
     Or a string, the table/view name to delete in the database. In the
     this case, the result model tables wrapped by \code{model},
     \code{residuals} and \code{statistics} will be deleted.
-
-    Or an object which is the result of \code{\link{generic.bagging}}.
-
 }
 
 \item{conn.id}{

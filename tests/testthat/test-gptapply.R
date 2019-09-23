@@ -26,6 +26,8 @@ db.q('DROP SCHEMA IF EXISTS test_Schema CASCADE;', verbose = .verbose)
 db.q('DROP SCHEMA IF EXISTS "test_Schema" CASCADE;', verbose = .verbose)
 db.q(paste('DROP TABLE IF EXISTS "', tname.1.col, '";', sep = ''), verbose = .verbose)
 db.q(paste('DROP TABLE IF EXISTS "', tname.mul.col, '";', sep = ''), verbose = .verbose)
+db.q('CREATE SCHEMA test_Schema;', verbose = .verbose)
+db.q('CREATE SCHEMA "test_Schema";', verbose = .verbose)
 
 # prepare test table
 .dat.1 <- as.data.frame(dat$rings)
@@ -48,7 +50,7 @@ test_that("Test prepare", {
     expect_equal(db.existsObject(tname.1.col, conn.id = cid), TRUE)
     expect_equal(db.existsObject(tname.mul.col, conn.id = cid), TRUE)
 
-    res <- db.q("CREATE SCHEMA test_Schema", verbose = .verbose)
+    res <- db.q("CREATE SCHEMA IF NOT EXISTS test_Schema", verbose = .verbose)
     expect_equal(res, NULL)
     res <- db.q("SELECT nspname FROM pg_namespace WHERE nspname = 'test_schema';",
                 verbose = .verbose)

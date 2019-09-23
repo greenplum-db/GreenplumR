@@ -61,10 +61,6 @@ to \code{sort(x, FALSE, "random")}. When
   Maintainer: Frank McQuillan, Pivotal Inc. \email{fmcquillan@pivotal.io}
 }
 
-\seealso{
-  \code{\link{generic.bagging}} uses \code{sample}
-}
-
 \examples{
 \dontrun{
 %% @test .port Database port number

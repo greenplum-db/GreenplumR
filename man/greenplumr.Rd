@@ -1,6 +1,6 @@
 \name{GUI}
+\alias{greenplumr}
 \alias{GreenplumR}
-\alias{pivotalr}
 
 \title{
   Graphical interface for GreenplumR based upon shiny
@@ -13,8 +13,6 @@
 
 \usage{
 GreenplumR()
-
-pivotalr()
 }
 
 \details{
