@@ -8,7 +8,6 @@ env <- new.env(parent = globalenv())
 #.dbname = get('pivotalr_dbname', envir=env)
 #.port = get('pivotalr_port', envir=env)
 
-.host <- '172.17.0.1'
 .host <- 'localhost'
 .dbname <- "rtest"
 .port <- 15432
@@ -23,8 +22,6 @@ random.name <- function() {
 }
 
 test_that("Create Type Test", {
-    testthat::skip_on_cran()
-
     basename <- random.name()
     typeName <- .to.type.name(basename)
     create_type_str <- .create.type.sql(typeName, signature_list = list("x"="int", "y"="text", "z"="float"))
@@ -41,18 +38,19 @@ test_that("Create Type Test", {
 })
 
 test_that(".simplify.signature ", {
-    testthat::skip_on_cran()
-
     res <- .simplify.signature(list("x"="int"))
     expect_equal(res$x, 'int')
-
 
     res <- .simplify.signature(list("x"="int", "y"="text", "z"="float"))
     expect_equal(res$x, 'int')
     expect_equal(res$y, 'text')
     expect_equal(res$z, 'float')
 
-    fs <- function() { function() { list("x"="int", "y"="text", "z"="float") } }
+    fs <- function() {
+        function() {
+            list("x"="int", "y"="text", "z"="float")
+        }
+    }
     res <- .simplify.signature(fs)
     expect_equal(res$x, 'int')
     expect_equal(res$y, 'text')
@@ -124,7 +122,10 @@ test_that("Test .create.r.wrapper", {
     typeName <- .to.type.name(basename)
     runtime.id <- 'plc_r_poison'
     language <- 'plr'
-    .sql <- .create.r.wrapper(basename = basename, FUN = sqrtFUN, Xattr = attributes(X),
+    Xattr <- attributes(X)
+    .sql <- .create.r.wrapper2(basename = basename, FUN = sqrtFUN,
+                                selected.type.list = .selected.type.list(Xattr),
+                                selected.equal.list = .selected.equal.list(Xattr$.col.name),
                                 args=list('hello'), runtime.id=runtime.id, language=language)
 
     L <- unlist(strsplit(.sql, split='\n'))
@@ -158,26 +159,16 @@ test_that("Test .create.r.wrapper", {
 # ----------------------------------------------------------------------
 
 test_that("Examples of testing string existence", {
-    testthat::skip_on_cran()
     tmp <- dat
     tmp$new.col <- 1
     expect_match(names(tmp), "new.col", all = FALSE)
 })
 
 # ----------------------------------------------------------------------
-
-# test_that("Examples of testing message", {
-#     testthat::skip_on_cran()
-#     expect_that(db.q("select * from", content(dat), conn.id = cid),
-#                 shows_message("Executing"))
-# })
-
-# ----------------------------------------------------------------------
 # Same test, different results on different platforms
 # ----------------------------------------------------------------------
 
 test_that("Different results on different platforms", {
-    testthat::skip_on_cran()
     res <- as.character(db.q("select version()", conn.id = cid, verbose = FALSE))
     if (.get.dbms.str(cid)$db.str == "PostgreSQL") {
     expect_match(res, "PostgreSQL")

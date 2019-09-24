@@ -43,7 +43,6 @@ dat.mul <- as.db.data.frame(dat, table.name = tname.mul.col, verbose = .verbose)
 # prepare data
 # ---------------------------------------------------------------
 test_that("Test prepare", {
-    testthat::skip_on_cran()
     expect_equal(is.db.data.frame(dat.1), TRUE)
     expect_equal(is.db.data.frame(dat.mul), TRUE)
     expect_equal(nrow(dat.1), .nrow.test)
@@ -54,8 +53,6 @@ test_that("Test prepare", {
     expect_equal(db.existsObject(tname.1.col, conn.id = cid), TRUE)
     expect_equal(db.existsObject(tname.mul.col, conn.id = cid), TRUE)
 
-    res <- db.q("CREATE SCHEMA IF NOT EXISTS IFtest_Schema", verbose = .verbose)
-    expect_equal(res, NULL)
     res <- db.q("SELECT nspname FROM pg_namespace WHERE nspname = 'test_schema';",
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)

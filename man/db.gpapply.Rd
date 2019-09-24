@@ -22,11 +22,11 @@ db.gpapply(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.signature = 
   }
 
   \item{MARGIN}{
-      margin
+      margin, not used by db.gpapply
   }
 
   \item{FUN}{
-    The input function
+    The function to apply each row of db.data.frame
   }
 
   \item{output.name}{
@@ -38,12 +38,13 @@ db.gpapply(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.signature = 
   }
   
   \item{output.signature}{
-    The parameter of output table
+    The signature of output table, can be a list or a function that takes no parameters.
     e.g. output.signature <- list(id = 'int', 'Sex' = 'text', 'Length' = 'float', height = 'float', shell = 'float')
+    or output.signature <- function() list(id = 'int')
   }
 
   \item{case.sensitive}{
-    Whether output.name, colnames of input tables, etc. are case sensitive
+    Whether output.name, colnames of input tables are case sensitive
   }
 
   \item{output.distributeOn}{
