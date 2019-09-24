@@ -1,0 +1,79 @@
+groups:
+- name: plr
+  jobs:
+  - test_plr_centos7
+
+resource_types:
+- name: gcs
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+
+resources:
+
+# Image Resources
+- name: centos-gpdb-dev-7
+  type: docker-image
+  source:
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '7-gcc6.2-llvm3.7'
+
+# - name: ubuntu18-image-test
+#   type: docker-image
+#   source:
+#     repository: pivotaldata/gpdb6-ubuntu18.04-test
+#     tag: latest
+
+# Github Source Codes
+
+- name: gpdb_src
+  type: git
+  source:
+    branch: {{gpdb-git-branch}}
+    uri: {{gpdb-git-remote}}
+
+- name: GreenplumR_src
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/greenplum-db/GreenplumR.git
+    
+
+- name: bin_gpdb_centos7
+  type: gcs
+  source:
+    bucket: ((gcs-bucket-intermediates))
+    json_key: ((concourse-gcs-resources-service-account-key))
+    versioned_file: gpdb_master/bin_gpdb_centos7/bin_gpdb.tar.gz
+
+# - name: bin_gpdb_ubuntu18
+#   type: gcs
+#   source:
+#     bucket: {{gcs-bucket-intermediates}}
+#     json_key: {{concourse-gcs-resources-service-account-key}}
+#     versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_ubuntu18.04/bin_gpdb.tar.gz
+
+- name: bin_plr_centos7
+  type: gcs
+  source:
+    bucket: ((gcs-bucket-intermediates))
+    json_key: ((concourse-gcs-resources-service-account-key))
+    regexp: plr/released/gpdb6/plr-(*)-rhel7-x86_64.gppkg
+
+
+jobs:
+
+- name: test_plr_centos7
+  plan:
+  - aggregate:
+    - get: gpdb_src
+    - get: GreenplumR_src
+    - get: bin_gpdb
+      resource: bin_gpdb_centos7
+    - get: bin_plr
+      resource: bin_plr_centos7
+    - get: centos-gpdb-dev-7
+  - task: test_greenplumr_plr_centos7
+    file: GreenplumR_src/concourse/tasks/test_plr.yml
+    image: centos-gpdb-dev-7
+
