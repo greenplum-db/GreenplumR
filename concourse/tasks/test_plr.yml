@@ -9,7 +9,10 @@ inputs:
   - name: bin_gpdb
   - name: bin_plr
 
+outputs:
+
 run:
   path: GreenplumR_src/concourse/scripts/test_plr.sh
 
 params:
+  MODE:

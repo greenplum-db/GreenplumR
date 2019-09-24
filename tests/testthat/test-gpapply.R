@@ -9,11 +9,12 @@ env <- new.env(parent = globalenv())
 #.port = get('pivotalr_port', envir=env)
 .verbose <- FALSE
 
-.host <- '172.17.0.1'
 .host <- 'localhost'
 .dbname <- "d_apply"
 .port <- 15432
-.language <- 'plr'
+.language <- tolower(Sys.getenv('GPRLANGUAGE'))
+if (.language != 'plr' && .language != 'plcontainer')
+    stop(paste0("invalid GPRLANGUAGE:", .language))
 ## connection ID
 cid <- db.connect(host = .host, port = .port, dbname = .dbname, verbose = .verbose)
 .nrow.test <- 10
@@ -29,6 +30,9 @@ db.q(paste('DROP TABLE IF EXISTS "', tname.mul.col, '";', sep = ''), verbose = .
 db.q('CREATE SCHEMA test_Schema;', verbose = .verbose)
 db.q('CREATE SCHEMA "test_Schema";', verbose = .verbose)
 
+# drop-create extension
+db.q(paste0('DROP EXTENSION IF EXISTS ', .language, ' CASCADE;'))
+db.q(paste0('CREATE EXTENSION ', .language, ';'))
 # prepare test table
 .dat.1 <- as.data.frame(dat$height)
 names(.dat.1) <- c('Height')
@@ -57,6 +61,9 @@ test_that("Test prepare", {
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), 1)
+
+    res <- db.q(paste0("SELECT 1 FROM pg_extension WHERE extname='", .language, "';"))
+    expect_equal(is.data.frame(res) && nrow(res) == 1, TRUE)
 })
 
 # test table has only one column
