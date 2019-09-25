@@ -10,7 +10,9 @@ env <- new.env(parent = globalenv())
 
 .host <- 'localhost'
 .dbname <- "rtest"
-.port <- 15432
+.port <- strtoi(Sys.getenv('PGPORT'))
+if (is.na(.port))
+    stop("PGPORT not set")
 .language <- tolower(Sys.getenv('GPRLANGUAGE'))
 if (.language != 'plr' && .language != 'plcontainer')
     stop(paste0("invalid GPRLANGUAGE:", .language))

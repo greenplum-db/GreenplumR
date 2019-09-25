@@ -35,13 +35,14 @@ export GPRLANGUAGE=plr
 pushd ${TOP_DIR}/GreenplumR_src
   # clear environment introduced by gpdb that may affect R
   sleep 3
+  export PGPORT=15432
   export PATH=${OLDPATH}
   unset R_HOME
   unset R_LIBS_USER
   unset LD_LIBRARY_PATH
   if [ "$MODE" == "light" ] ; then
     echo "library(testthat)" > test_script.R
-    echo "testthat::test_dir('tests', reporter = 'stop', stop_on_failure = TRUE)" >> test_script.R
+    echo "testthat::test_dir('tests', reporter = 'fail', stop_on_failure = TRUE)" >> test_script.R
     R --no-save < test_script.R
   else
     R CMD check .
