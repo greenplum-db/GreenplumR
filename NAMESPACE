@@ -104,6 +104,3 @@ export("db.gpapply")
 exportMethods("ifelse", "rowSums", "rowMeans")
 
 exportMethods("relevel")
-
-# export these functions used by tests
-export("getRandomNameList")

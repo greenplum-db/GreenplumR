@@ -26,6 +26,8 @@ db.q('DROP SCHEMA IF EXISTS test_Schema CASCADE;', verbose = .verbose)
 db.q('DROP SCHEMA IF EXISTS "test_Schema" CASCADE;', verbose = .verbose)
 db.q(paste('DROP TABLE IF EXISTS "', tname.1.col, '";', sep = ''), verbose = .verbose)
 db.q(paste('DROP TABLE IF EXISTS "', tname.mul.col, '";', sep = ''), verbose = .verbose)
+db.q('CREATE SCHEMA test_Schema;', verbose = .verbose)
+db.q('CREATE SCHEMA "test_Schema";', verbose = .verbose)
 
 # prepare test table
 .dat.1 <- as.data.frame(dat$height)
@@ -41,7 +43,6 @@ dat.mul <- as.db.data.frame(dat, table.name = tname.mul.col, verbose = .verbose)
 # prepare data
 # ---------------------------------------------------------------
 test_that("Test prepare", {
-    testthat::skip_on_cran()
     expect_equal(is.db.data.frame(dat.1), TRUE)
     expect_equal(is.db.data.frame(dat.mul), TRUE)
     expect_equal(nrow(dat.1), .nrow.test)
@@ -52,8 +53,6 @@ test_that("Test prepare", {
     expect_equal(db.existsObject(tname.1.col, conn.id = cid), TRUE)
     expect_equal(db.existsObject(tname.mul.col, conn.id = cid), TRUE)
 
-    res <- db.q("CREATE SCHEMA test_Schema", verbose = .verbose)
-    expect_equal(res, NULL)
     res <- db.q("SELECT nspname FROM pg_namespace WHERE nspname = 'test_schema';",
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
@@ -135,6 +134,7 @@ test_that("Test output.name is schema.table", {
     res <- db.gpapply(dat.test, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
+
     expect_equal(res, NULL)
     res <- db.q(paste("SELECT 1 FROM \"test_schema\".\"resultGPapply\" WHERE \"Score\" IS NOT NULL;"),
                 verbose = .verbose)
@@ -412,6 +412,7 @@ fn.inc <- function(x)
     return (x[, c(1, 2, 3, 5, 9)])
 }
 # output.name is NULL
+
 test_that("MT-Test output.name is NULL", {
     .output.name <- NULL
     # case sensitive
