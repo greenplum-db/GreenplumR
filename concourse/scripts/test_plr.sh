@@ -1,6 +1,6 @@
 #!/bin/bash -l
-
 set -exo pipefail
+
 OLDPATH=${PATH}
 echo "OLDPATH = ${OLDPATH}"
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
