@@ -1,0 +1,22 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+
+inputs:
+  - name: GreenplumR_src
+  - name: plcontainer_src
+  - name: ccp_src
+  - name: gpdb_binary
+  - name: bin_plcontainer
+  - name: plcontainer_rclient_docker_image
+  - name: cluster_env_files
+
+outputs:
+
+run:
+  path: GreenplumR_src/concourse/scripts/test_plcontainer.sh
+
+params:
+  MODE:
+
