@@ -11,8 +11,15 @@ env <- new.env(parent = globalenv())
 .host <- 'localhost'
 .dbname <- "rtest"
 .port <- 15432
+.language <- tolower(Sys.getenv('GPRLANGUAGE'))
+if (.language != 'plr' && .language != 'plcontainer')
+    stop(paste0("invalid GPRLANGUAGE:", .language))
 ## connection ID
 cid <- db.connect(host = .host, port = .port, dbname = .dbname, verbose = FALSE)
+
+# drop-create extension
+db.q(paste0('DROP EXTENSION IF EXISTS ', .language, ' CASCADE;'))
+db.q(paste0('CREATE EXTENSION ', .language, ';'))
 
 ## data in the database
 dat <- as.db.data.frame(abalone, conn.id = cid, verbose = FALSE)
@@ -121,7 +128,7 @@ test_that("Test .create.r.wrapper", {
     funName <- .to.func.name(basename)
     typeName <- .to.type.name(basename)
     runtime.id <- 'plc_r_poison'
-    language <- 'plr'
+    language <- .language
     Xattr <- attributes(X)
     .sql <- .create.r.wrapper2(basename = basename, FUN = sqrtFUN,
                                 selected.type.list = .selected.type.list(Xattr),
