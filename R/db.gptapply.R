@@ -67,7 +67,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     tryCatch({
         ar <- attributes(X)
         relation_name <- ar$.content
-        param.name.list <- .type.fields.list(ar$.col.name)
+        param.name.list <- .quoted.fields.list(ar$.col.name)
         if (isTRUE(case.sensitive)) {
             if (!is.null(output.name))
                 output.name <-  paste('"', unlist(strsplit(output.name, '\\.')),'"', sep='', collapse='.')

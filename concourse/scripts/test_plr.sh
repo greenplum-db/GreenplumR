@@ -25,6 +25,7 @@ source /usr/local/greenplum-db-devel/greenplum_path.sh
 source ${TOP_DIR}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
 gpstop -arf
 createdb rtest
+createdb debug_apply
 createdb d_apply
 createdb d_tapply
 EOF

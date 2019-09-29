@@ -134,26 +134,9 @@ getRandomNameList <- function(n = 1)
     paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
 }
 
-# project of select clause - gpapply
-.select.fields.list <- function(col.name)
+.quoted.fields.list <- function(col.name)
 {
-    paste(lapply(col.name, function(i)
-            ifelse(tolower(i)==i, 
-                # if column is lower case or non-case-sensitive
-                i,
-                # column is case sensitive
-                paste0('"', i, '"'))
-        ), sep = '', collapse = ', ')
-}
-
-.type.fields.list <- function(col.name){
-    paste(lapply(col.name, function(i)
-            ifelse(tolower(i) == i,
-                # if column is lower case or non-case-sensitive
-                i,
-                # column is case sensitive
-                paste('"',i,'"', sep=''))
-        ), sep = '', collapse = ', ')
+    paste('"', col.name, '"', sep = '', collapse = ', ')
 }
 
 # project of select clause - gptapply
@@ -164,37 +147,12 @@ getRandomNameList <- function(n = 1)
 
 .to.group.field <- function(col.name, isIndex) {
     if (!isIndex)
-        if (tolower(col.name) != col.name)
-            return (paste('array_agg("', col.name, '") AS "', col.name, '"', sep = ''))
-        else
-            return (paste('array_agg("', col.name, '") AS ', col.name, sep = ''))
-    if (tolower(col.name) == col.name)
-        return (col.name)
-    return (paste('"', col.name, '" AS "', col.name, '"', sep = ''))
-}
-
-.create.r.wrapper <- function(basename, FUN, Xattr, args, runtime.id='', language='plcontainer')
-{
-    #generate output
-    local_data_frame_str <- paste(Xattr$.col.name, Xattr$.col.name, sep='=', collapse=', ')
-    param.list.str <- paste(paste('"', Xattr$.col.name, '"', sep = ''), Xattr$.col.udt_name, collapse=", ")
-    listStr <- .extract.param.list(args)
-    if (nchar(listStr)>0)
-        listStr <- paste(', ', listStr, sep='')
-
-    typeName <- .to.type.name(basename)
-    funName <- .to.func.name(basename)
-    funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
-    localdf <- sprintf("df <- data.frame(%s)", local_data_frame_str)
-    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr)
-
-    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
-                          funName, param.list.str, typeName, funBody, localdf, localcall, language)
-    return (createStmt)
+		return (paste('array_agg("', col.name, '") AS "', col.name, '"', sep = ''))
+    return (paste('"', col.name, '"', sep = ''))
 }
 
 # selected.type.list should be `"field1" type1 (, "filed.x" typex)*
-# double quoted field name make it case sensitive in UDF 
+# double quoted field name make it case sensitive in UDF
 .create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, runtime.id, language) {
     typeName <- .to.type.name(basename)
     funName <- .to.func.name(basename)

@@ -35,6 +35,7 @@ plcontainer image-add -f /usr/local/greenplum-db-devel/share/postgresql/plcontai
 plcontainer runtime-add -r plc_r_shared -i pivotaldata/plcontainer_r_shared:devel -l r -s use_container_logging=yes; \
 gpstop -arf; \
 createdb rtest; \
+createdb debug_apply; \
 createdb d_apply; \
 createdb d_tapply; \
 \""
