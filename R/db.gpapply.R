@@ -26,8 +26,11 @@
 # 2. CREATE FUNCTION gprfunc_xxx
 # 3. Execute the r-wrapper-function
 # 4. DROP TYPE gptype_xxx CASCADE
-db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE,
-                       case.sensitive = FALSE, output.distributeOn = NULL, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
+                        output.signature = NULL, clear.existing = FALSE,
+                        case.sensitive = FALSE, output.distributeOn = NULL,
+                        debugger.mode = FALSE, runtime.id = "plc_r_shared",
+                        language = "plcontainer", ...)
 {
     if (is.null(X) || !is.db.data.frame(X))
         stop("X must be a db.data.frame")
@@ -46,8 +49,16 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
     else {
         # signature is not null, create a type
         create_type_sql <- .create.type.sql(typeName, output.signature, case.sensitive = case.sensitive)
-        db.q(create_type_sql, verbose = FALSE)
+        db.q(create_type_sql, verbose = debugger.mode)
     }
+
+    if (length(list(...)) == 0) {
+        args.str <- ''
+    } else {
+        str <- deparse(substitute(list(...)))
+        args.str <- paste0(', ', substr(str, 6, nchar(str) - 1))
+    }
+
     tryCatch({
         # generate function parameter str
         ar <- attributes(X)
@@ -71,9 +82,9 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
         createStmt <- .create.r.wrapper2(basename=basename, FUN=FUN,
                                 selected.type.list = .selected.type.list(ar),
                                 selected.equal.list = .selected.equal.list(ar$.col.name),
-                                args=list(...), runtime.id=runtime.id,
+                                user.args.str=args.str, runtime.id=runtime.id,
                                 language=language)
-        db.q(createStmt, verbose = FALSE)
+        db.q(createStmt, verbose = debugger.mode)
 
         # Run the generated query inside GPDB
         distribute.str <- .distribute.str(output.distributeOn,
@@ -87,13 +98,13 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.
                             clear.existing = clear.existing,
                             distribute.str = distribute.str)
 
-        results <- db.q(query, nrows = NULL, verbose = FALSE)
+        results <- db.q(query, nrows = NULL, verbose = debugger.mode)
 
     #END OF tryCatch
     }, finally = {
         #drop type
         cleanString <- sprintf("DROP TYPE %s CASCADE;", typeName)
-        db.q(cleanString, verbose = FALSE)
+        db.q(cleanString, verbose = debugger.mode)
     })
 
     return (results)

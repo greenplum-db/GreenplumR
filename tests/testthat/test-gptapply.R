@@ -9,7 +9,7 @@ env <- new.env(parent = globalenv())
 #.port = get('pivotalr_port', envir=env)
 .verbose <- FALSE
 
-.host <- 'localhost'
+.host <- Sys.getenv('PGHOST', 'localhost')
 .dbname <- "d_tapply"
 .port <- strtoi(Sys.getenv('PGPORT'))
 if (is.na(.port))
@@ -39,6 +39,7 @@ db.q(paste0('CREATE EXTENSION ', .language, ';'))
 .dat.1 <- as.data.frame(dat$rings)
 names(.dat.1) <- c('Rings')
 dat.1 <- as.db.data.frame(.dat.1, table.name = tname.1.col, verbose = .verbose)
+names(dat) <- c('Id', 'Sex', 'Length', 'length', 'Height', 'height', 'shucked', 'Shucked', 'Shell', 'rings')
 dat.mul <- as.db.data.frame(dat, table.name = tname.mul.col, verbose = .verbose)
 
 # ---------------------------------------------------------------
@@ -379,6 +380,9 @@ test_that("Test language", {
 test_that("Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
+        print(junk1)
+        print(junk2)
+        print(junk3)
         return (x[1] + 1)
     }
     # case sensitive
@@ -669,6 +673,9 @@ test_that("MT-Test distributedOn", {
 test_that("MT-Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
+        print(junk1)
+        print(junk2)
+        print(junk3)
         x$length <- x$length + 1
         x$height <- x$height - 1
         return (x[, c(1, 2, 3, 10)])

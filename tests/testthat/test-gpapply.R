@@ -9,7 +9,7 @@ env <- new.env(parent = globalenv())
 #.port = get('pivotalr_port', envir=env)
 .verbose <- FALSE
 
-.host <- 'localhost'
+.host <- Sys.getenv('PGHOST', 'localhost')
 .dbname <- "d_apply"
 .port <- strtoi(Sys.getenv('PGPORT'))
 if (is.na(.port))
@@ -42,6 +42,7 @@ dat.name <- names(dat)
 dat.name[2] <- toupper(dat.name[2])
 names(dat) <- dat.name
 dat.1 <- as.db.data.frame(.dat.1, table.name = tname.1.col, verbose = .verbose)
+names(dat) <- c('Id', 'Sex', 'Length', 'length', 'Height', 'height', 'shucked', 'Shucked', 'Shell', 'rings')
 dat.mul <- as.db.data.frame(dat, table.name = tname.mul.col, verbose = .verbose)
 
 
@@ -60,6 +61,11 @@ test_that("Test prepare", {
     expect_equal(db.existsObject(tname.mul.col, conn.id = cid), TRUE)
 
     res <- db.q("SELECT nspname FROM pg_namespace WHERE nspname = 'test_schema';",
+                verbose = .verbose)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), 1)
+
+    res <- db.q("SELECT nspname FROM pg_namespace WHERE nspname = 'test_Schema';",
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), 1)
@@ -137,26 +143,28 @@ test_that("Test output.name is a table name", {
 
 # output.name is not NULL, and it is a single table name
 test_that("Test output.name is schema.table", {
-    .output.name <- 'test_schema.resultGPapply'
+    .output.name <- 'test_Schema.resultGPapply'
 
     # case sensitive
+    db.q('DROP TABLE IF EXISTS "test_Schema"."resultGPapply";')
     res <- db.gpapply(dat.test, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
 
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM \"test_schema\".\"resultGPapply\" WHERE \"Score\" IS NOT NULL;"),
+    res <- db.q('SELECT 1 FROM "test_Schema"."resultGPapply" WHERE "Score" IS NOT NULL;',
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 
     # case non-sensitive
+    db.q('DROP TABLE IF EXISTS test_Schema.resultGPapply;')
     res <- db.gpapply(dat.test, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM ", .output.name,
-                " WHERE Score IS NOT NULL;", sep = ""), verbose = .verbose)
+    res <- db.q('SELECT 1 FROM test_Schema.resultGPapply WHERE Score IS NOT NULL;',
+                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 
@@ -348,6 +356,9 @@ test_that("Test language", {
 test_that("Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
+        print(junk1)
+        print(junk2)
+        print(junk3)
         return (x[1] + 1)
     }
     # case sensitive
@@ -479,32 +490,33 @@ test_that("MT-Test output.name is a table name", {
 
 # output.name is not NULL, and it is a single table name
 test_that("MT-Test output.name is schema.table", {
-    .output.name <- 'test_schema.resultGPapply'
+    .output.name <- 'test_Schema.mResultGPapply'
 
     # case sensitive
+    db.q('DROP TABLE IF EXISTS "test_Schema"."mResultGPapply";')
     res <- db.gpapply(dat.test, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = TRUE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM \"test_schema\".\"resultGPapply\" WHERE \"Length\" IS NOT NULL;"),
+    res <- db.q('SELECT 1 FROM "test_Schema"."mResultGPapply" WHERE "Length" IS NOT NULL;',
                 verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 
     # case non-sensitive
+    db.q('DROP TABLE IF EXISTS test_Schema.mResultGPapply;')
     res <- db.gpapply(dat.test, output.name = .output.name,
                     FUN = fn.inc, output.signature = .signature,
                     clear.existing = TRUE, case.sensitive = FALSE, language = .language)
     expect_equal(res, NULL)
-    res <- db.q(paste("SELECT 1 FROM ", .output.name,
-                " WHERE Length IS NOT NULL;", sep = ""), verbose = .verbose)
+    res <- db.q('SELECT 1 FROM test_Schema.mResultGPapply WHERE Length IS NOT NULL;',
+                verbose = .verbose)
     expect_equal(is.data.frame(res), TRUE)
     expect_equal(nrow(res), nrow(dat.test))
 
 })
 
 test_that("MT-Test output.name is invalid name", {
-    # TODO: this invalid parameter should throw an exception
     .output.names <- list('"ab"', '"b.c"', 'public.ab.cd')
     for(name in .output.names) {
         tryCatch({
@@ -707,6 +719,9 @@ test_that("MT-Test distributedOn", {
 test_that("MT-Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
+        print(junk1)
+        print(junk2)
+        print(junk3)
         x$length <- x$length + 1
         x$height <- x$height - 1
         return (x[, c(1, 2, 3, 5, 9)])

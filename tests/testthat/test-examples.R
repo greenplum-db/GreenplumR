@@ -8,7 +8,7 @@ env <- new.env(parent = globalenv())
 #.dbname = get('pivotalr_dbname', envir=env)
 #.port = get('pivotalr_port', envir=env)
 
-.host <- 'localhost'
+.host <- Sys.getenv('PGHOST', 'localhost')
 .dbname <- "rtest"
 .port <- strtoi(Sys.getenv('PGPORT'))
 if (is.na(.port))
@@ -135,7 +135,7 @@ test_that("Test .create.r.wrapper", {
     .sql <- .create.r.wrapper2(basename = basename, FUN = sqrtFUN,
                                 selected.type.list = .selected.type.list(Xattr),
                                 selected.equal.list = .selected.equal.list(Xattr$.col.name),
-                                args=list('hello'), runtime.id=runtime.id, language=language)
+                                user.args.str = ', "Hello"', runtime.id=runtime.id, language=language)
 
     L <- unlist(strsplit(.sql, split='\n'))
 

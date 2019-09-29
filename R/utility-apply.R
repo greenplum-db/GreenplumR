@@ -142,7 +142,7 @@ getRandomNameList <- function(n = 1)
                 # if column is lower case or non-case-sensitive
                 i,
                 # column is case sensitive
-                paste('"', i, '" AS "', i, '"', sep = ''))
+                paste0('"', i, '"'))
         ), sep = '', collapse = ', ')
 }
 
@@ -195,15 +195,12 @@ getRandomNameList <- function(n = 1)
 
 # selected.type.list should be `"field1" type1 (, "filed.x" typex)*
 # double quoted field name make it case sensitive in UDF 
-.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, args, runtime.id, language) {
+.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, runtime.id, language) {
     typeName <- .to.type.name(basename)
     funName <- .to.func.name(basename)
-    listStr <- .extract.param.list(args)
-    if (nchar(listStr)>0)
-        listStr <- paste(', ', listStr, sep='')
     funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
     localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
-    localcall <- sprintf("do.call(gplocalf, list(df%s))", listStr)
+    localcall <- sprintf("do.call(gplocalf, list(df%s))", user.args.str)
 
     createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
                           funName, selected.type.list, typeName, funBody, localdf, localcall, language)

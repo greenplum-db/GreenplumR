@@ -8,8 +8,10 @@
   This function sends SQL queries into the connected database to execute, and then extracts the result if there is any.
 }
 \usage{
-db.gptapply(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE, case.sensitive = FALSE,
-        output.distributeOn = NULL, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+db.gptapply(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
+            clear.existing = FALSE, case.sensitive = FALSE,
+            output.distributeOn = NULL, debugger.mode = FALSE,
+            runtime.id = "plc_r_shared", language = "plcontainer", ...)
 }
 
 \arguments{
@@ -50,8 +52,13 @@ db.gptapply(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, c
     Specify how output table is stored in database
   }
 
+  \item{debugger.mode}{
+    Set to TRUE if you want to print the executed SQL internally.
+  }
+
   \item{runtime.id}{
-    runtime.id
+    Used by plcontainer only. The runtime id is set by plcontainer to specify a runtime cnofiguration.
+    See plcontainer for more information.
     e.g. plc_r_shared
   }
 

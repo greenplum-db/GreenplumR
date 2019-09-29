@@ -30,8 +30,10 @@
 # 2. CREATE FUNCTION gprfunc_xxx
 # 3. Execute the r-wrapper-function
 # 4. DROP TYPE gptype_xxx CASCADE
-db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL, clear.existing = FALSE, case.sensitive = FALSE,
-        output.distributeOn = NULL, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
+                        clear.existing = FALSE, case.sensitive = FALSE,
+                        output.distributeOn = NULL, debugger.mode = FALSE,
+                        runtime.id = "plc_r_shared", language = "plcontainer", ...)
 {
     # handle case when colnames of X are not all lower, and case.sensitive = FALSE
     if (is.null(X) || !is.db.data.frame(X))
@@ -50,7 +52,16 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
         stop("NULL signature, not impl")
     } else {
         create_type_str <- .create.type.sql(typeName, output.signature, case.sensitive = case.sensitive)
-        db.q(create_type_str, verbose = FALSE)
+        if (debugger.mode)
+            print(paste('create type:', create_type_str))
+        db.q(create_type_str, verbose = debugger.mode)
+    }
+
+    if (length(list(...)) == 0) {
+        args.str <- ''
+    } else {
+        str <- deparse(substitute(list(...)))
+        args.str <- paste0(', ', substr(str, 6, nchar(str) - 1))
     }
 
     tryCatch({
@@ -90,9 +101,9 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                                     selected.type.list = param.type.list,
                                     # selected column from table X, it may be optimized
                                     selected.equal.list = .selected.equal.list(ar$.col.name),
-                                    args = list(...), runtime.id = runtime.id,
+                                    user.args.str = args.str, runtime.id = runtime.id,
                                     language = language)
-        db.q(createStmt, verbose = FALSE)
+        db.q(createStmt, verbose = debugger.mode)
 
         index <- paste('"', INDEX, '"', sep = '')
         funName <- .to.func.name(basename)
@@ -110,13 +121,19 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
             if (nchar(clearStmt) > 0)
                         query <- paste(clearStmt, query)
         }
-        results <- db.q(query, nrows = NULL, verbose = FALSE)
+        results <- db.q(query, nrows = NULL, verbose = debugger.mode)
 
     #END OF tryCatch
     }, finally = {
         # STEP: Do cleanup
         cleanString <- sprintf("DROP TYPE %s CASCADE;", typeName)
-        db.q(cleanString, verbose = FALSE)
+        if (debugger.mode) {
+            print(sprintf('output.name = %s, INDEX = %s', output.name, INDEX)) 
+            print(sprintf('create.func: %s', createStmt))
+            print(paste('run query:', query))
+            print(paste('clean type/func:', cleanString))
+        }
+        db.q(cleanString, verbose = debugger.mode)
     })
 
     return (results)
