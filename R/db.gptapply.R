@@ -52,8 +52,6 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
         stop("NULL signature, not impl")
     } else {
         create_type_str <- .create.type.sql(typeName, output.signature, case.sensitive = case.sensitive)
-        if (debugger.mode)
-            print(paste('create type:', create_type_str))
         db.q(create_type_str, verbose = debugger.mode)
     }
 
@@ -127,12 +125,6 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
     }, finally = {
         # STEP: Do cleanup
         cleanString <- sprintf("DROP TYPE %s CASCADE;", typeName)
-        if (debugger.mode) {
-            print(sprintf('output.name = %s, INDEX = %s', output.name, INDEX)) 
-            print(sprintf('create.func: %s', createStmt))
-            print(paste('run query:', query))
-            print(paste('clean type/func:', cleanString))
-        }
         db.q(cleanString, verbose = debugger.mode)
     })
 

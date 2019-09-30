@@ -356,9 +356,9 @@ test_that("Test language", {
 test_that("Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
-        print(junk1)
-        print(junk2)
-        print(junk3)
+        stopifnot(junk1 == 12)
+        stopifnot(junk2 == 'Hello')
+        stopifnot(is.list(junk3) && junk3$id == 1 && junk3$name == 'world')
         return (x[1] + 1)
     }
     # case sensitive
@@ -719,9 +719,9 @@ test_that("MT-Test distributedOn", {
 test_that("MT-Test additional junk parameters", {
     .output.name <- 'testJunkParameter'
     .func <- function(x, junk1, junk2, junk3) {
-        print(junk1)
-        print(junk2)
-        print(junk3)
+        stopifnot(junk1 == 12)
+        stopifnot(junk2 == 'Hello')
+        stopifnot(is.list(junk3) && junk3$id == 1 && junk3$name == 'world')
         x$length <- x$length + 1
         x$height <- x$height - 1
         return (x[, c(1, 2, 3, 5, 9)])

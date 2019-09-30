@@ -63,10 +63,10 @@
         return ('')
     if (!is.character(output.name))
         stop("output.name must be NULL or type of character")
-    if (!db.existsObject(output.name))
-        return ('')
     if (is.logical(clear.existing) && isTRUE(clear.existing))
         return (paste("DROP TABLE IF EXISTS ", output.name, ";", sep=""))
+    if (!db.existsObject(output.name))
+        return ('')
     # NZR truncate talbe if clear.existing is 'truncate',
     # but this doesn't work for greenplum. If we need to support the 'truncate'
     # value for clear.existing, just drop this table.

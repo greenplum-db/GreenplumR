@@ -78,6 +78,7 @@ test_that("Debug MT gpapply", {
     res <- db.gpapply(dat.test, output.name = .output.name,
                       FUN = .func, output.signature = .signature,
                       clear.existing = TRUE, case.sensitive = TRUE,
+                      output.distributeOn = 'randomly',
                       debugger.mode = TRUE, language = .language)
     expect_equal(res, NULL)
 })
@@ -86,8 +87,8 @@ test_that("Debug MT-junk gpapply", {
     .output.name <- 'debugJunk'
     .signature <- list('Id'='int', 'Sex'='text', 'Length'='float', 'sLength'='float')
     .func <- function(X, junk1, junk2) {
-        print(junk1)
-        print(junk2)
+        stopifnot(junk1 == 12)
+        stopifnot(junk2 == 'Helo')
         X$length <- X$length + 1
         X$Length <- X$Length + 100
         return (X[, c(1:4)])
@@ -95,6 +96,7 @@ test_that("Debug MT-junk gpapply", {
     res <- db.gpapply(dat.test, output.name = .output.name,
                       FUN = .func, output.signature = .signature,
                       clear.existing = TRUE, case.sensitive = TRUE,
+                      output.distributeOn = 'randomly',
                       debugger.mode = TRUE, language = .language,
                       junk1 = 12, junk2 = 'Helo')
     expect_equal(res, NULL)
@@ -112,11 +114,13 @@ test_that("Debug MT gptapply", {
     res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
                       FUN = .func, output.signature = .signature,
                       clear.existing = TRUE, case.sensitive = TRUE,
+                      output.distributeOn = 'randomly',
                       debugger.mode = TRUE, language = .language)
     expect_equal(res, NULL)
     res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
                       FUN = .func, output.signature = .signature,
                       clear.existing = TRUE, case.sensitive = FALSE,
+                      output.distributeOn = 'randomly',
                       debugger.mode = TRUE, language = .language)
     expect_equal(res, NULL)
 })
@@ -125,8 +129,8 @@ test_that("Debug MT-junk gptapply", {
     .output.name <- 'debugJunkT'
     .signature <- list('Id'='int', 'Sex'='text', 'Length'='float', 'sLength'='float')
     .func <- function(X, junk1, junk2) {
-        print(junk1)
-        print(junk2)
+        stopifnot(junk1 == 12)
+        stopifnot(junk2 == 'Helo')
         X$length <- X$length + 1
         X$Length <- X$Length + 100
         return (X[, c(1:4)])
@@ -134,6 +138,7 @@ test_that("Debug MT-junk gptapply", {
     res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
                       FUN = .func, output.signature = .signature,
                       clear.existing = TRUE, case.sensitive = TRUE,
+                      output.distributeOn = 'randomly',
                       debugger.mode = TRUE, language = .language,
                       junk1 = 12, junk2 = 'Helo')
     expect_equal(res, NULL)
@@ -141,6 +146,7 @@ test_that("Debug MT-junk gptapply", {
     res <- db.gptapply(dat.test, INDEX = .index, output.name = .output.name,
                       FUN = .func, output.signature = .signature,
                       clear.existing = TRUE, case.sensitive = FALSE,
+                      output.distributeOn = 'randomly',
                       debugger.mode = TRUE, language = .language,
                       junk1 = 12, junk2 = 'Helo')
     expect_equal(res, NULL)
