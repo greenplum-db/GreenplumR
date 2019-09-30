@@ -21,6 +21,15 @@
         stop(paste("invalid output.name:", output.name))
 }
 
+.where.str <- function(where)
+{
+    if (is.null(where))
+        return ('')
+    if (is.character(where))
+        return (paste(' WHERE ', where, sep = ''))
+    stop('where clause must be null or a character')
+}
+
 .simplify.signature <- function(signature)
 {
     if (is.null(signature) || is.list(signature))

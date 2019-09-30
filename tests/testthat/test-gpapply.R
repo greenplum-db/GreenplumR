@@ -431,6 +431,19 @@ fn.inc <- function(x)
     x$height <- x$height - 1
     return (x[, c(1, 2, 3, 5, 9)])
 }
+# TEST OF VIEW
+test_that("Test View", {
+    db.q("DROP VIEW IF EXISTS tableview;")
+    db.q('CREATE VIEW tableview AS SELECT * FROM "mul_Col_Table";')
+    dat.view <- db.data.frame('tableview')
+    res <- db.gpapply(dat.view, output.name = NULL, FUN = fn.inc,
+                      output.signature = .signature, clear.existing = TRUE,
+                      case.sensitive = FALSE, language = .language)
+    expect_equal(is.data.frame(res), TRUE)
+    expect_equal(nrow(res), nrow(dat.view))
+    expect_equal(ncol(res), length(.signature))
+    db.q("DROP VIEW IF EXISTS tableview;")
+})
 # output.name is NULL
 
 test_that("MT-Test output.name is NULL", {
