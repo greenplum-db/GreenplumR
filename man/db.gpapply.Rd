@@ -2,10 +2,12 @@
 \alias{db.gpapply}
 
 \title{
-  Execute a SQL query
+  Apply a R function to every row of data inside GPDB.
 }
 \description{
-  This function sends SQL queries into the connected database to execute, and then extracts the result if there is any.
+  GPDB will use the PL/Containe or PL/R to run the input R function. 
+  An R-wrapper of function will be created as an UDF inside GPDB. 
+  The calculation can be done on parallel. 
 }
 \usage{
 db.gpapply(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.signature = NULL,
