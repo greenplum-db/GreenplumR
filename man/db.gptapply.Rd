@@ -2,11 +2,16 @@
 \alias{db.gptapply}
 
 \title{
-  Execute a SQL query
+  Data inside GPDB is group by a selected index. 
+  A R function is applied to every row of grouped data.
 }
+
 \description{
-  This function sends SQL queries into the connected database to execute, and then extracts the result if there is any.
+  GPDB will use the PL/Containe or PL/R to run the input R function. 
+  An R-wrapper of function will be created as an UDF inside GPDB. 
+  The calculation can be done on parallel. 
 }
+
 \usage{
 db.gptapply(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
             clear.existing = FALSE, case.sensitive = FALSE,
