@@ -121,8 +121,8 @@ resources:
 - name: GreenplumR_src
   type: git
   source:
-    branch: pipeline
-    uri: https://github.com/HaozhouWang/GreenplumR.git
+    branch: master
+    uri: https://github.com/greenplum-db/GreenplumR.git
 
 # ccp_src tag_filter is not maintained by gpdb_common-ci-secrets.yml
 # so we just pull the laster ccp_src without tag_filter
