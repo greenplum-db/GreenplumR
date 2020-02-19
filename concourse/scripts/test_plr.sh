@@ -36,7 +36,7 @@ export GPRLANGUAGE=plr
 pushd ${TOP_DIR}/GreenplumR_src
   # clear environment introduced by gpdb that may affect R
   sleep 3
-  export PGPORT=15432
+  export PGPORT=6000
   export PATH=${OLDPATH}
   unset R_HOME
   unset R_LIBS_USER

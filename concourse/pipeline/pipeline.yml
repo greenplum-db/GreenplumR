@@ -136,7 +136,7 @@ resources:
 - name: plcontainer_src
   type: git
   source:
-    branch: ((plcontainer-branch))
+    branch: master
     uri: https://github.com/greenplum-db/plcontainer.git
 
 - name: terraform
@@ -190,22 +190,28 @@ resources:
   source:
     bucket: {{gcs-bucket-intermediates}}
     json_key: {{concourse-gcs-resources-service-account-key}}
-    versioned_file: plcontainer/published/gpdb6/plcontainer-r-images-devel.tar.gz
+    versioned_file: plcontainer/published/master/plcontainer-r-images-devel.tar.gz
 
 - name: bin_plcontainer_centos7
   type: gcs
   source:
     bucket: {{gcs-bucket-intermediates}}
     json_key: {{concourse-gcs-resources-service-account-key}}
-    versioned_file: plcontainer/published/gpdb6/plcontainer-concourse-centos7.gppkg
+    versioned_file: plcontainer/published/master/plcontainer-concourse-centos7.gppkg
 
 - name: bin_plcontainer_ubuntu18
   type: gcs
   source:
     bucket: {{gcs-bucket-intermediates}}
     json_key: {{concourse-gcs-resources-service-account-key}}
-    versioned_file: plcontainer/published/gpdb6/plcontainer-concourse-ubuntu18.gppkg
+    versioned_file: plcontainer/published/master/plcontainer-concourse-ubuntu18.gppkg
 
+- name: plcontainer_gpdb_ubuntu18_build_lib
+  type: gcs
+  source:
+    bucket: {{gcs-bucket-intermediates}}
+    json_key: {{concourse-gcs-resources-service-account-key}}
+    versioned_file: plcontainer/published/gpdb6/plcontainer-concourse-ubuntu18-lib.tar.gz
 
 jobs:
 - name: test_plr_light_centos7
@@ -289,6 +295,7 @@ jobs:
     - get: bin_plcontainer
       resource: bin_plcontainer_centos7
       trigger: true
+    - get: plcontainer_gpdb_ubuntu18_build_lib
   - put: terraform
     params:
       <<: *ccp_default_params
@@ -329,6 +336,7 @@ jobs:
     - get: bin_plcontainer
       resource: bin_plcontainer_ubuntu18
       trigger: true
+    - get: plcontainer_gpdb_ubuntu18_build_lib
   - put: terraform
     params:
       <<: *ccp_default_params
