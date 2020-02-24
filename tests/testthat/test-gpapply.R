@@ -835,4 +835,27 @@ test_that("duplicated column table", {
     expect_equal(nrow(res), nrow(dat))
     expect_equal(ncol(res), ncol(dat))
 })
+
+# --------------------------------------------------------------------------
+# PARSE FUNCTION TEST 
+# --------------------------------------------------------------------------
+
+test_that("Test consistency of database objects", {
+    tryCatch({
+    .output.name <- 'testConsistency'
+    .func <- function(x) {
+     stop("internal error by myself")
+    }
+
+    db.gpapply(dat.test, output.name = .output.name,
+                    FUN = .func, output.signature = .signature,
+                    clear.existing = TRUE, language = .language)
+    stop("can't be here")
+    }, error = function(e) {
+       print("Expected error detected")
+    }, finally = {
+    })
+
+})
+
 db.disconnect(cid, verbose = .verbose)

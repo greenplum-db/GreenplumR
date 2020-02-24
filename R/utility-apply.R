@@ -165,7 +165,10 @@ getRandomNameList <- function(n = 1)
 .create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, runtime.id, language) {
     typeName <- .to.type.name(basename)
     funName <- .to.func.name(basename)
-    funBody <- paste("# container: ", runtime.id, "\ngplocalf <- ", paste(deparse(FUN), collapse="\n"), sep="")
+    userCode <- paste(deparse(FUN), collapse="\n")
+    # check the userCode is correct or not
+    parse(text = userCode) 
+    funBody <- sprintf("# container: %s \ngplocalf <- %s", runtime.id, userCode)
     localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
     localcall <- sprintf("do.call(gplocalf, list(df%s))", user.args.str)
 
