@@ -5,13 +5,20 @@ GreenplumR is a R client that designed for Greenplum Database (> 6.0). With Gree
 
 How to install
 ==============
+Pre-Installation:
+
+You need to install **ini, shiny, RPostgreSQL** packages before install GreenplumR.
+```
+install.packages(c("ini", "shiny", "RPostgreSQL"))
+```
+
 
 You can install GreenplumR through 2 ways:
 
- 1. Install throught devtools and get the latest development version from github by running the following code (need R >= 3.0.2):
+ 1. Install throught devtools and get the latest development version from github by running the following code (need R >= 3.6.0):
 
 ```
-    ## install.packages("devtools") # 'devtools' package is only available for R >= 3.0.2
+    ## install.packages("devtools")
     devtools::install_github("GreenplumR", "greenplum-db")
 ```
 2. Or You can download the source tarball directly from [**here**](https://github.com/greenplum-db/GreenplumR/tarball/master), and then install the tarball in R:
@@ -27,7 +34,7 @@ Get started
 library(GreenplumR)
 
 ## connect to a local database
-db.connect(port = 15432, dbname = "test")
+db.connect(host = "localhost",port = 5432, dbname = "test")
 
 ## connect to database via DSN
 
@@ -42,15 +49,27 @@ t <- db.data.frame("tbl.tbl")
 
 t
 
-## example of gpApply (TBA)
+## example of gpapply
+fn.function_plus_one <- function(num)
+{
+    return (num[[1]] + 1)
+}
+# for example table "tbl.tbl" has one integer column, we need to define the signature of input data frame
+.sig <- list("num" = "int")
+x <- db.gpapply(t, output.name = NULL, FUN = fn.function_plus_one, output.signature = .sig, clear.existing = TRUE, case.sensitive = TRUE, language = "plcontainer")
 
-x <- gpApply()
-
-## example of gpTApply (TBA)
-
-y <- gpTApply()
+# comparing with gpapply, gptapply allows you to add an extra argument "INDEX"
+# if the table is indexed by column num, we can call gptapply in this way:
+.index <- 'num'
+y <- db.gptapply(t, INDEX = .index, output.name = NULL, FUN = fn.function_plus_one, output.signature = .sig, clear.existing = TRUE, case.sensitive = TRUE, language = "plcontainer")
 
 ```
+For more information about gpapply and gptapply, please refer to detailed document:
+
+[gpapply](./db.gpapply.md)
+
+[gptapply](./db.gptapply.md)
+
 
 Management Tools
 ===========
