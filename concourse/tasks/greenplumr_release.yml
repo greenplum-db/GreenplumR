@@ -1,0 +1,12 @@
+platform: linux
+image_resource:
+  type: docker-image
+
+inputs:
+  - name: GreenplumR_src
+
+outputs:
+  - name: plcontainer_gpdb_ubuntu18_build_lib_release
+  
+run:
+  path: GreenplumR_src/concourse/scripts/greenplumr_release.sh
