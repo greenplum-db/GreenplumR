@@ -6,7 +6,7 @@ inputs:
   - name: GreenplumR_src
 
 outputs:
-  - name: plcontainer_gpdb_ubuntu18_build_lib_release
+  - name: greenplumR-release
   
 run:
   path: GreenplumR_src/concourse/scripts/greenplumr_release.sh
