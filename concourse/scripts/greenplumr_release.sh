@@ -23,9 +23,9 @@ release_greenplumr() {
   popd
 
   # release GreenplumR
-  mkdir -p release_greenplumr
+  mkdir -p greenplumR-release
   tar zcf ${TOP_DIR}/greenplumR.tar.gz ${TOP_DIR}/GreenplumR_src
-  cp greenplumR.tar.gz release_greenplumr/greenplumR-${GREENPLUMR_VERSION}.${GREENPLUMR_RELEASE}-gp6.tar.gz
+  cp greenplumR.tar.gz greenplumR-release/greenplumR-${GREENPLUMR_VERSION}.${GREENPLUMR_RELEASE}-gp6.tar.gz
 }
 
 release_greenplumr
