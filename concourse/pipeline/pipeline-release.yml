@@ -129,4 +129,4 @@ jobs:
   - aggregate:
     - put: greenplumR-release
       params:
-        file: release_greenplumr/greenplumR-*.tar.gz
+        file: greenplumR-release/greenplumR-*.tar.gz
