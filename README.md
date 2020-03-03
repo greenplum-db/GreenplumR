@@ -43,6 +43,10 @@ db.list() # list connections
 db.objects() # list all tables in connection 1
 
 db.objects("tbl.tbl") # search table in connection 1
+#[1] "tbl.tbl"
+
+db.objects("TBL.TBL") # NOTICE: unlike PG's behavior, db.objects in R is a Case-Sensitive function, the table name in greenplum if tbl.tbl, so this function call's result is NULL
+#NULL
 
 ## wrapper of a table in connection 1
 t <- db.data.frame("tbl.tbl")
