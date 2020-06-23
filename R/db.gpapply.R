@@ -33,7 +33,7 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
                         output.signature = NULL, clear.existing = FALSE,
                         case.sensitive = FALSE, output.distributeOn = NULL,
                         debugger.mode = FALSE, runtime.id = "plc_r_shared",
-                        language = "plcontainer", ...)
+                        language = "plcontainer", input.signature = NULL, ...)
 {
     if (is.null(X) || !is.db.data.frame(X))
         stop("X must be a db.data.frame")
@@ -79,13 +79,14 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
         }
         
         quoted.fields.list <- .quoted.fields.list(ar$.col.name)
+		localArgsStr <- .create.inputArgs(input.signature)
 
 
         # Create function
         createStmt <- .create.r.wrapper2(basename=basename, FUN=FUN,
                                 selected.type.list = .selected.type.list(ar),
                                 selected.equal.list = .selected.equal.list(ar$.col.name),
-                                user.args.str=args.str, runtime.id=runtime.id,
+                                user.args.str = localArgsStr, runtime.id=runtime.id,
                                 language=language)
         db.q(createStmt, verbose = debugger.mode)
 
