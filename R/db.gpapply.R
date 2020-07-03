@@ -79,8 +79,11 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
         }
         
         quoted.fields.list <- .quoted.fields.list(ar$.col.name)
-		localArgsStr <- .create.inputArgs(input.signature)
-
+        if (is.null(input.signature)) {
+            localArgsStr <- args.str
+        } else {
+            localArgsStr <- .create.inputArgs(input.signature)
+        }
 
         # Create function
         createStmt <- .create.r.wrapper2(basename=basename, FUN=FUN,

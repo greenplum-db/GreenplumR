@@ -33,7 +33,8 @@
 db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
                         clear.existing = FALSE, case.sensitive = FALSE,
                         output.distributeOn = NULL, debugger.mode = FALSE,
-                        runtime.id = "plc_r_shared", language = "plcontainer", ...)
+                        runtime.id = "plc_r_shared", language = "plcontainer",
+                        input.signature = NULL, ...)
 {
     # handle case when colnames of X are not all lower, and case.sensitive = FALSE
     if (is.null(X) || !is.db.data.frame(X))
@@ -92,6 +93,12 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                 param.group.list <- .to.group.field(ar$.col.name[i], .isIndex)
                 param.type.list <- .to.type.field(ar$.col.name[i], ar$.col.udt_name[i], .isIndex)
             }
+        }
+
+        if (is.null(input.signature)) {
+            localArgsStr <- args.str
+        } else {
+            localArgsStr <- .create.inputArgs(input.signature)
         }
         
         #Create function
