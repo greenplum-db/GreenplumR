@@ -79,9 +79,8 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
         }
         
         quoted.fields.list <- .quoted.fields.list(ar$.col.name)
-        if (is.null(input.signature)) {
-            localArgsStr <- args.str
-        } else {
+		localArgsStr <- NULL
+        if (!is.null(input.signature)) {
             localArgsStr <- .create.inputArgs(input.signature)
         }
 
@@ -89,7 +88,7 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
         createStmt <- .create.r.wrapper2(basename=basename, FUN=FUN,
                                 selected.type.list = .selected.type.list(ar),
                                 selected.equal.list = .selected.equal.list(ar$.col.name),
-                                user.args.str = localArgsStr, runtime.id=runtime.id,
+                                user.args.str = args.str, input.args.str = localArgsStr, runtime.id=runtime.id,
                                 language=language)
         db.q(createStmt, verbose = debugger.mode)
 
@@ -103,7 +102,7 @@ db.gpapply <- function(X, MARGIN = NULL, FUN = NULL, output.name = NULL,
                             typeName = typeName,
                             clear.existing = clear.existing,
                             distribute.str = distribute.str)
-
+        print(query)
         results <- db.q(query, nrows = NULL, verbose = debugger.mode)
 
     #END OF tryCatch

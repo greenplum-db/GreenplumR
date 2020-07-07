@@ -94,10 +94,9 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                 param.type.list <- .to.type.field(ar$.col.name[i], ar$.col.udt_name[i], .isIndex)
             }
         }
-
-        if (is.null(input.signature)) {
-            localArgsStr <- args.str
-        } else {
+        
+		localArgsStr <- NULL
+        if (!is.null(input.signature)) {
             localArgsStr <- .create.inputArgs(input.signature)
         }
         
@@ -106,7 +105,7 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
                                     selected.type.list = param.type.list,
                                     # selected column from table X, it may be optimized
                                     selected.equal.list = .selected.equal.list(ar$.col.name),
-                                    user.args.str = args.str, runtime.id = runtime.id,
+                                    user.args.str = args.str, input.args.str = localArgsStr, runtime.id = runtime.id,
                                     language = language)
         db.q(createStmt, verbose = debugger.mode)
 

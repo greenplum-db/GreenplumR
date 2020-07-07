@@ -184,19 +184,26 @@ getRandomNameList <- function(n = 1)
 
 # selected.type.list should be `"field1" type1 (, "filed.x" typex)*
 # double quoted field name make it case sensitive in UDF
-.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, runtime.id, language) {
+.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, input.args.str = NULL, runtime.id, language) {
     typeName <- .to.type.name(basename)
     funName <- .to.func.name(basename)
     userCode <- paste(deparse(FUN), collapse="\n")
     # check the userCode is correct or not
     parse(text = userCode) 
     funBody <- sprintf("# container: %s \ngplocalf <- %s", runtime.id, userCode)
-    #localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
-    localcall <- sprintf("gplocalf(%s)", user.args.str)
+	createStmt <- ""
 
-    #createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
-    #                      funName, selected.type.list, typeName, funBody, localdf, localcall, language)
-    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n return(%s)\n $$ LANGUAGE '%s';",
-                          funName, selected.type.list, typeName, funBody, localcall, language)
+	if (is.null(input.args.str)) {
+	    localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
+		localcall <- sprintf("do.call(gplocalf, list(df%s))", user.args.str)
+        createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
+                              funName, selected.type.list, typeName, funBody, localdf, localcall, language)
+
+	} else {
+        localcall <- sprintf("gplocalf(%s)", input.args.str)
+        createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n return(%s)\n $$ LANGUAGE '%s';",
+                              funName, selected.type.list, typeName, funBody, localcall, language)
+	}
     return (createStmt)
 }
+
