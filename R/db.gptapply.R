@@ -33,7 +33,8 @@
 db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
                         clear.existing = FALSE, case.sensitive = FALSE,
                         output.distributeOn = NULL, debugger.mode = FALSE,
-                        runtime.id = "plc_r_shared", language = "plcontainer", ...)
+                        runtime.id = "plc_r_shared", language = "plcontainer",
+                        input.signature = NULL, ...)
 {
     # handle case when colnames of X are not all lower, and case.sensitive = FALSE
     if (is.null(X) || !is.db.data.frame(X))
@@ -94,12 +95,17 @@ db.gptapply <- function(X, INDEX, FUN = NULL, output.name = NULL, output.signatu
             }
         }
         
+		localArgsStr <- NULL
+        if (!is.null(input.signature)) {
+            localArgsStr <- .create.inputArgs(input.signature)
+        }
+        
         #Create function
         createStmt <- .create.r.wrapper2(basename = basename, FUN = FUN, 
                                     selected.type.list = param.type.list,
                                     # selected column from table X, it may be optimized
                                     selected.equal.list = .selected.equal.list(ar$.col.name),
-                                    user.args.str = args.str, runtime.id = runtime.id,
+                                    user.args.str = args.str, input.args.str = localArgsStr, runtime.id = runtime.id,
                                     language = language)
         db.q(createStmt, verbose = debugger.mode)
 

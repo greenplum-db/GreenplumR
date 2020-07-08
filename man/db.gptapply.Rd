@@ -16,7 +16,8 @@
 db.gptapply(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
             clear.existing = FALSE, case.sensitive = FALSE,
             output.distributeOn = NULL, debugger.mode = FALSE,
-            runtime.id = "plc_r_shared", language = "plcontainer", ...)
+            runtime.id = "plc_r_shared", language = "plcontainer", 
+            input.signature = NULL, ...)
 }
 
 \arguments{
@@ -43,6 +44,13 @@ db.gptapply(X, INDEX, FUN = NULL, output.name = NULL, output.signature = NULL,
   \item{output.signature}{
     The parameter of output table
     e.g. output.signature <- list(id = 'int', 'Sex' = 'text', 'Length' = 'float', height = 'float', shell = 'float')
+  }
+
+  \item{input.signature}{
+      The parameter to match the applying function arguments and table columns' name
+      The pair is function arguments name = table column name
+      e.g. input.signature <- list('arg_f_1' = 'arg_t_1', 'arg_f_2' = 'arg_t_2')
+      NOTICE: The order of both arguments must not change
   }
 
   \item{case.sensitive}{

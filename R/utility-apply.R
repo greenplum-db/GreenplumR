@@ -124,6 +124,28 @@
     return (typelist_str)
 }
 
+.create.inputArgs <- function(signature_list, case.sensitive=FALSE)
+{
+    if (is.null(signature_list))
+      return (NULL)
+
+    #CASE_SENSITIVE:  signature_list
+    typelist <- .simplify.signature(signature_list)
+
+    if (isTRUE(case.sensitive)){
+        if (isTRUE(any(duplicated(names(typelist)))))
+            stop(paste("duplicated signature:", paste(names(typelist), collapse=", ")))
+        argStr <- paste(names(typelist), " =  ", typelist, sep="", collapse=", ")
+    }
+    else{
+        if (isTRUE(any(duplicated(tolower(names(typelist))))))
+            stop(paste("duplicated signature:", paste(names(typelist), collapse=", ")))
+        argStr <- paste(names(typelist), " =  ", typelist, sep="", collapse=", ")
+    }
+
+    return (argStr)
+}
+
 getRandomNameList <- function(n = 1)
 {
     a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
@@ -162,17 +184,26 @@ getRandomNameList <- function(n = 1)
 
 # selected.type.list should be `"field1" type1 (, "filed.x" typex)*
 # double quoted field name make it case sensitive in UDF
-.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, runtime.id, language) {
+.create.r.wrapper2 <- function(basename, FUN, selected.type.list, selected.equal.list, user.args.str, input.args.str = NULL, runtime.id, language) {
     typeName <- .to.type.name(basename)
     funName <- .to.func.name(basename)
     userCode <- paste(deparse(FUN), collapse="\n")
     # check the userCode is correct or not
     parse(text = userCode) 
     funBody <- sprintf("# container: %s \ngplocalf <- %s", runtime.id, userCode)
-    localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
-    localcall <- sprintf("do.call(gplocalf, list(df%s))", user.args.str)
+	createStmt <- ""
 
-    createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
-                          funName, selected.type.list, typeName, funBody, localdf, localcall, language)
+	if (is.null(input.args.str)) {
+	    localdf <- sprintf("df <- data.frame(%s)", selected.equal.list)
+		localcall <- sprintf("do.call(gplocalf, list(df%s))", user.args.str)
+        createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n %s\nreturn(%s)\n $$ LANGUAGE '%s';",
+                              funName, selected.type.list, typeName, funBody, localdf, localcall, language)
+
+	} else {
+        localcall <- sprintf("gplocalf(%s)", input.args.str)
+        createStmt <- sprintf("CREATE FUNCTION %s (%s) RETURNS SETOF %s AS $$\n %s\n return(%s)\n $$ LANGUAGE '%s';",
+                              funName, selected.type.list, typeName, funBody, localcall, language)
+	}
     return (createStmt)
 }
+

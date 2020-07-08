@@ -12,7 +12,8 @@
 \usage{
 db.gpapply(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.signature = NULL,
             clear.existing = FALSE, case.sensitive = FALSE, output.distributeOn = NULL,
-            debugger.mode = FALSE, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+            debugger.mode = FALSE, runtime.id = "plc_r_shared", language = "plcontainer", 
+            input.signature = NULL, ...)
 }
 
 \arguments{
@@ -45,6 +46,14 @@ db.gpapply(X, MARGIN = NULL, FUN = NULL, output.name = NULL, output.signature = 
     e.g. output.signature <- list(id = 'int', 'Sex' = 'text', 'Length' = 'float', height = 'float', shell = 'float')
     or output.signature <- function() list(id = 'int')
   }
+
+  \item{input.signature}{
+    The parameter to match the applying function arguments and table columns' name
+    The pair is function arguments name = table column name
+    e.g. input.signature <- list('arg_f_1' = 'arg_t_1', 'arg_f_2' = 'arg_t_2')
+    NOTICE: The order of both arguments must not change
+  }
+
 
   \item{case.sensitive}{
     Whether output.name, colnames of input tables are case sensitive
