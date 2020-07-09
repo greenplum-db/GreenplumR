@@ -15,7 +15,7 @@
 ```r
 db.gpapply(X, FUN = NULL, output.name = NULL, output.signature = NULL,
             clear.existing = FALSE, case.sensitive = FALSE, output.distributeOn = NULL,
-            debugger.mode = FALSE, runtime.id = "plc_r_shared", language = "plcontainer", ...)
+            debugger.mode = FALSE, runtime.id = "plc_r_shared", language = "plcontainer", input.signature = NULL, ...)
 ```
 
 
@@ -34,6 +34,7 @@ Argument      |Description
 ```debugger.mode```     |      TRUE to print the executed SQL internally. 
 ```runtime.id```     |      Used by "plcontainer" language only. The runtime id is set by plcontainer to specify a runtime cnofiguration. See plcontainer for more information. The argument type is string, e.g. "plc_r_shared" 
 ```language```     |      value should be "plcontainer" or "plr" 
+```input.signature```     |      A list contains the name matching pattern between input table column name (i.e. parameter X) and apply function arugments if the type of apply function first parameter is not a data.frame. e.g. input.signature <- list('c1' = 'arg1')  
 
 Other parameters: if the function FUN has extra argument other than X, you can append them after all of the required arguments list.
 
