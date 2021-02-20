@@ -216,7 +216,7 @@ resources:
 jobs:
 - name: test_plr_light_centos7
   plan:
-  - aggregate:
+  - in_parallel:
     - get: gpdb_src
     - get: GreenplumR_src
       trigger: true
@@ -232,7 +232,7 @@ jobs:
 
 - name: test_plr_full_centos7
   plan:
-  - aggregate:
+  - in_parallel:
     - get: gpdb_src
     - get: GreenplumR_src
     - get: bin_gpdb
@@ -248,7 +248,7 @@ jobs:
 
 - name: test_plr_light_ubuntu18
   plan:
-  - aggregate:
+  - in_parallel:
     - get: gpdb_src
     - get: GreenplumR_src
       trigger: true
@@ -264,7 +264,7 @@ jobs:
 
 - name: test_plr_full_ubuntu18
   plan:
-  - aggregate:
+  - in_parallel:
     - get: gpdb_src
     - get: GreenplumR_src
     - get: bin_gpdb
@@ -281,7 +281,7 @@ jobs:
 # test GrenplumR for plcontainer
 - name: test_plcontainer_centos7
   plan:
-  - aggregate:
+  - in_parallel:
     - get: plcontainer_src
     - get: GreenplumR_src
     # this name is needed by ccp to gencluster
@@ -322,7 +322,7 @@ jobs:
 
 - name: test_plcontainer_ubuntu18
   plan:
-  - aggregate:
+  - in_parallel:
     - get: plcontainer_src
     - get: GreenplumR_src
     # this name is needed by ccp to gencluster
