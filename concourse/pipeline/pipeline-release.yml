@@ -2,6 +2,7 @@ groups:
 - name: All
   jobs:
   - test_plr_light_centos7
+  - test_plr_light_rhel8
   - test_plr_light_ubuntu18
   - greenplumR_release
 
@@ -20,15 +21,15 @@ resource_types:
 resources:
 # Image Resources
 - name: centos-gpdb-dev-7
-  type: docker-image
+  type: registry-image
   source:
-    repository: pivotaldata/centos-gpdb-dev
-    tag: '7-gcc6.2-llvm3.7'
+    repository: gcr.io/data-gpdb-public-images/gpdb5-centos7-build-test
+    tag: latest
 
 - name: ubuntu18-image-test
-  type: docker-image
+  type: registry-image
   source:
-    repository: pivotaldata/gpdb6-ubuntu18.04-test
+    repository: gcr.io/data-gpdb-public-images/gpdb6-ubuntu18.04-build
     tag: latest
 
 # Github Source Codes
@@ -54,6 +55,13 @@ resources:
     bucket: ((gcs-bucket-intermediates))
     json_key: ((concourse-gcs-resources-service-account-key))
     versioned_file: 6X_STABLE/bin_gpdb_centos7/bin_gpdb.tar.gz
+
+- name: bin_gpdb_rhel8
+  type: gcs
+  source:
+    bucket: {{gcs-bucket-intermediates}}
+    json_key: {{concourse-gcs-resources-service-account-key}}
+    versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_rhel8/bin_gpdb.tar.gz
 
 - name: bin_gpdb_ubuntu18
   type: gcs

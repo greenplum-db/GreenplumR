@@ -3,6 +3,8 @@ groups:
   jobs:
   - test_plr_light_centos7
   - test_plr_full_centos7
+  - test_plr_light_rhel8
+  - test_plr_full_rhel8
   - test_plr_light_ubuntu18
   - test_plr_full_ubuntu18
   - test_plcontainer_centos7
@@ -14,6 +16,8 @@ groups:
   - test_plr_full_centos7
   - test_plr_light_ubuntu18
   - test_plr_full_ubuntu18
+  - test_plr_light_rhel8
+  - test_plr_full_rhel8
 
 - name: plcontainer
   jobs:
@@ -27,13 +31,12 @@ ccp_create_params_anchor: &ccp_default_params
   action: create
   delete_on_failure: true
   generate_random_name: true
+  plugin_dir: ../../terraform.d/plugin-cache/linux_amd64
   terraform_source: ccp_src/google/
 
 ccp_vars_anchor: &ccp_default_vars
-  instance_type: n1-standard-4
-  region: {{google-region}}
-  zone: {{google-zone}}
-  disk_size: 100
+  instance_type: n1-standard-2
+  platform: centos6
 
 ccp_gen_cluster_default_params_anchor: &ccp_gen_cluster_default_params
   AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
@@ -48,6 +51,7 @@ ccp_destroy_anchor: &ccp_destroy
   params:
     action: destroy
     env_name_file: terraform/name
+    plugin_dir: ../../terraform.d/plugin-cache/linux_amd64
     terraform_source: ccp_src/google/
     vars:
       aws_instance-node-instance_type: t2.micro #t2.micro is ignored in destroy, but aws_instance-node-instance_type is required.
@@ -63,8 +67,8 @@ set_failed_anchor: &set_failed
       image_resource:
         type: docker-image
         source:
-          repository: pivotaldata/ccp
-          tag: "7"
+          repository: gcr.io/data-gpdb-public-images/ccp
+          tag: latest
       inputs:
         - name: ccp_src
         - name: terraform
@@ -97,15 +101,23 @@ resource_types:
 resources:
 # Image Resources
 - name: centos-gpdb-dev-7
-  type: docker-image
+  type: registry-image
   source:
-    repository: pivotaldata/centos-gpdb-dev
-    tag: '7-gcc6.2-llvm3.7'
+    repository: gcr.io/data-gpdb-public-images/gpdb5-centos7-build-test
+    tag: latest
+
+- name: rhel-image-dev-8
+  type: registry-image
+  source:
+    repository: gcr.io/data-gpdb-private-images/gpdb6-rhel8-test
+    tag: latest
+    username: _json_key
+    password: ((container-registry-readonly-service-account-key))
 
 - name: ubuntu18-image-test
-  type: docker-image
+  type: registry-image
   source:
-    repository: pivotaldata/gpdb6-ubuntu18.04-test
+    repository: gcr.io/data-gpdb-public-images/gpdb6-ubuntu18.04-test
     tag: latest
 
 # Github Source Codes
@@ -157,12 +169,28 @@ resources:
       bucket: {{tf-bucket-name}}
       bucket_path: clusters-google/
 
+- name: terraform.d
+  source:
+    access_key_id: ((bucket-access-key-id))
+    bucket: ccp-terraform-provider-plugins
+    region_name: ((aws-region))
+    secret_access_key: ((bucket-secret-access-key))
+    versioned_file: plugin-cache.tgz
+  type: s3
+
 - name: bin_gpdb_centos7
   type: gcs
   source:
     bucket: ((gcs-bucket-intermediates))
     json_key: ((concourse-gcs-resources-service-account-key))
     versioned_file: 6X_STABLE/bin_gpdb_centos7/bin_gpdb.tar.gz
+
+- name: bin_gpdb_rhel8
+  type: gcs
+  source:
+    bucket: {{gcs-bucket-intermediates}}
+    json_key: {{concourse-gcs-resources-service-account-key}}
+    versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_rhel8/bin_gpdb.tar.gz
 
 - name: bin_gpdb_ubuntu18
   type: gcs
@@ -174,16 +202,23 @@ resources:
 - name: bin_plr_centos7
   type: gcs
   source:
-    bucket: ((gcs-bucket))
+    bucket: {{gcs-bucket-intermediates}}
     json_key: ((concourse-gcs-resources-service-account-key))
-    regexp: plr/released/gpdb6/plr-(.*)-rhel7_x86_64.gppkg
+    versioned_file: plr/published/gpdb6/plr-rhel7.gppkg
+
+- name: bin_plr_rhel8
+  type: gcs
+  source:
+    bucket: {{gcs-bucket-intermediates}}
+    json_key: ((concourse-gcs-resources-service-account-key))
+    versioned_file: plr/published/gpdb6/plr-rhel8.gppkg
 
 - name: bin_plr_ubuntu18
   type: gcs
   source:
-    bucket: ((gcs-bucket))
+    bucket: {{gcs-bucket-intermediates}}
     json_key: ((concourse-gcs-resources-service-account-key))
-    regexp: plr/released/gpdb6/plr-(.*)-ubuntu18.04_x86_64.gppkg
+    versioned_file: plr/published/gpdb6/plr-ubuntu18.gppkg
 
 - name: plcontainer_docker_image_centos_r
   type: gcs
@@ -214,6 +249,38 @@ resources:
     versioned_file: plcontainer/published/gpdb6/plcontainer-concourse-ubuntu18-lib.tar.gz
 
 jobs:
+- name: test_plr_light_rhel8
+  plan:
+  - aggregate:
+    - get: gpdb_src
+    - get: GreenplumR_src
+      trigger: true
+    - get: bin_gpdb
+      resource: bin_gpdb_rhel8
+    - get: bin_plr
+      resource: bin_plr_rhel8
+    - get: rhel-image-dev-8
+  - task: test_greenplumr_plr_rhel8
+    file: GreenplumR_src/concourse/tasks/test_plr.yml
+    image: rhel-image-dev-8
+    params:
+
+- name: test_plr_full_rhel8
+  plan:
+  - aggregate:
+    - get: gpdb_src
+    - get: GreenplumR_src
+    - get: bin_gpdb
+      resource: bin_gpdb_rhel8
+    - get: bin_plr
+      resource: bin_plr_rhel8
+    - get: rhel-image-dev-8
+  - task: test_greenplumr_plr_rhel8
+    file: GreenplumR_src/concourse/tasks/test_plr.yml
+    image: rhel-image-dev-8
+    params:
+      MODE: full
+
 - name: test_plr_light_centos7
   plan:
   - aggregate:
@@ -288,6 +355,7 @@ jobs:
     - get: gpdb_binary
       resource: bin_gpdb_centos7
     - get: ccp_src
+    - get: terraform.d
     - get: centos-gpdb-dev-7
     - get: plcontainer_rclient_docker_image
       resource: plcontainer_docker_image_centos_r
@@ -329,6 +397,7 @@ jobs:
     - get: gpdb_binary
       resource: bin_gpdb_ubuntu18
     - get: ccp_src
+    - get: terraform.d
     - get: ubuntu18-image-test
     - get: plcontainer_rclient_docker_image
       resource: plcontainer_docker_image_centos_r
