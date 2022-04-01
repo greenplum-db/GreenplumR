@@ -42,10 +42,13 @@ function install_libraries_min() {
       ;;
     esac
     # install r libraries
+    ${CWDIR}/install_r_package.R devtools
     ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R RPostgreSQL
     ${CWDIR}/install_r_package.R shiny
     ${CWDIR}/install_r_package.R ini
+
+    # install r libraries from GitHub
+    ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
 }
 
 function install_libraries_full() {
