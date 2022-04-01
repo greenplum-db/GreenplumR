@@ -84,6 +84,9 @@ function install_libraries() {
       yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
       yum install -y R postgresql-devel
+      # for devtools
+      yum groupinstall 'Development Tools' and
+      yum install -y gcc gcc-c++ make openssl-devel libxml2-devel libcurl-devel
       ;;
     ubuntu)
       apt update

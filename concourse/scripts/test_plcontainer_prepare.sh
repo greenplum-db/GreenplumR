@@ -31,10 +31,13 @@ function install_libraries_min() {
       yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
       yum install -y R postgresql-devel
+      # for R devtools
+      yum groupinstall -y 'Development Tools'
+      yum install -y build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev libcurl-devel
       ;;
     ubuntu)
       apt update
-      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev
+      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
       ;;
     *)
       echo "unknown TEST_OS = $TEST_OS"
