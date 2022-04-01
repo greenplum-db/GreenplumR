@@ -36,7 +36,7 @@ ccp_create_params_anchor: &ccp_default_params
 
 ccp_vars_anchor: &ccp_default_vars
   instance_type: n1-standard-2
-  platform: centos6
+  number_of_nodes: 2
 
 ccp_gen_cluster_default_params_anchor: &ccp_gen_cluster_default_params
   AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
@@ -55,7 +55,7 @@ ccp_destroy_anchor: &ccp_destroy
     terraform_source: ccp_src/google/
     vars:
       aws_instance-node-instance_type: t2.micro #t2.micro is ignored in destroy, but aws_instance-node-instance_type is required.
-      aws_ebs_volume_type: standard
+      aws_ebs_volume_type: n1-standard-1
   get_params:
     action: destroy
 
@@ -65,7 +65,7 @@ set_failed_anchor: &set_failed
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: gcr.io/data-gpdb-public-images/ccp
           tag: latest
@@ -87,16 +87,15 @@ set_failed_anchor: &set_failed
 #####################################################
 
 resource_types:
-- name: gcs
-  type: docker-image
-  source:
-    repository: frodenas/gcs-resource
-
-- name: terraform
-  type: docker-image
-  source:
-    repository: ljfranklin/terraform-resource
-    tag: 0.11.14
+    - name: terraform
+      type: registry-image
+      source:
+        repository: ljfranklin/terraform-resource
+        tag: 0.11.14
+    - name: gcs
+      type: registry-image
+      source:
+        repository: frodenas/gcs-resource
 
 resources:
 # Image Resources
@@ -133,7 +132,7 @@ resources:
 - name: GreenplumR_src
   type: git
   source:
-    branch: master
+    branch: sa/6X_rhel8
     uri: https://github.com/greenplum-db/GreenplumR.git
 
 # ccp_src tag_filter is not maintained by gpdb_common-ci-secrets.yml
@@ -351,11 +350,14 @@ jobs:
   - aggregate:
     - get: plcontainer_src
     - get: GreenplumR_src
+      trigger: true
     # this name is needed by ccp to gencluster
     - get: gpdb_binary
       resource: bin_gpdb_centos7
     - get: ccp_src
     - get: terraform.d
+      params:
+        unpack: true
     - get: centos-gpdb-dev-7
     - get: plcontainer_rclient_docker_image
       resource: plcontainer_docker_image_centos_r
@@ -370,6 +372,9 @@ jobs:
       vars:
         <<: *ccp_default_vars
         PLATFORM: centos7
+        instance_type: n1-standard-4
+        zone: {{google-zone}}
+        region: {{google-region}}
   - task: gen_cluster
     file: ccp_src/ci/tasks/gen_cluster.yml
     params:
@@ -393,11 +398,14 @@ jobs:
   - aggregate:
     - get: plcontainer_src
     - get: GreenplumR_src
+      trigger: true
     # this name is needed by ccp to gencluster
     - get: gpdb_binary
       resource: bin_gpdb_ubuntu18
     - get: ccp_src
     - get: terraform.d
+      params:
+        unpack: true
     - get: ubuntu18-image-test
     - get: plcontainer_rclient_docker_image
       resource: plcontainer_docker_image_centos_r
@@ -412,6 +420,9 @@ jobs:
       vars:
         <<: *ccp_default_vars
         PLATFORM: ubuntu18.04
+        instance_type: n1-standard-4
+        zone: {{google-zone}}
+        region: {{google-region}}
   - task: gen_cluster
     file: ccp_src/ci/tasks/gen_cluster.yml
     params:
