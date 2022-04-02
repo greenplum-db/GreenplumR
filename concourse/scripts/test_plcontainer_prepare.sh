@@ -31,9 +31,6 @@ function install_libraries_min() {
       yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
       yum install -y R postgresql-devel
-      # for R devtools
-      yum groupinstall -y 'Development Tools'
-      yum install -y build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev libcurl-devel
       ;;
     ubuntu)
       apt update
@@ -45,7 +42,7 @@ function install_libraries_min() {
       ;;
     esac
     # install r libraries
-    ${CWDIR}/install_r_package.R devtools
+    ${CWDIR}/install_r_package.R remotes
     ${CWDIR}/install_r_package.R testthat
     ${CWDIR}/install_r_package.R shiny
     ${CWDIR}/install_r_package.R ini
