@@ -2,7 +2,7 @@ groups:
 - name: All
   jobs:
   - test_plr_light_centos7
-  - test_plr_light_rhel8
+    # - test_plr_light_rhel8
   - test_plr_light_ubuntu18
   - greenplumR_release
 
@@ -47,7 +47,6 @@ resources:
   source:
     branch: master
     uri: https://github.com/greenplum-db/GreenplumR.git
-    tag_filter: 1.*
 
 - name: bin_gpdb_centos7
   type: gcs
@@ -56,12 +55,12 @@ resources:
     json_key: ((concourse-gcs-resources-service-account-key))
     versioned_file: 6X_STABLE/bin_gpdb_centos7/bin_gpdb.tar.gz
 
-- name: bin_gpdb_rhel8
-  type: gcs
-  source:
-    bucket: {{gcs-bucket-intermediates}}
-    json_key: {{concourse-gcs-resources-service-account-key}}
-    versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_rhel8/bin_gpdb.tar.gz
+      #- name: bin_gpdb_rhel8
+      #type: gcs
+      #source:
+      #bucket: {{gcs-bucket-intermediates}}
+      #json_key: {{concourse-gcs-resources-service-account-key}}
+      #versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_rhel8/bin_gpdb.tar.gz
 
 - name: bin_gpdb_ubuntu18
   type: gcs
@@ -73,16 +72,16 @@ resources:
 - name: bin_plr_centos7
   type: gcs
   source:
-    bucket: ((gcs-bucket))
+    bucket: {{gcs-bucket-intermediates}}
     json_key: ((concourse-gcs-resources-service-account-key))
-    regexp: plr/released/gpdb6/plr-(.*)-rhel7_x86_64.gppkg
+    versioned_file: plr/published/gpdb6/plr-rhel7.gppkg
 
 - name: bin_plr_ubuntu18
   type: gcs
   source:
-    bucket: ((gcs-bucket))
+    bucket: {{gcs-bucket-intermediates}}
     json_key: ((concourse-gcs-resources-service-account-key))
-    regexp: plr/released/gpdb6/plr-(.*)-ubuntu18.04_x86_64.gppkg
+    versioned_file: plr/published/gpdb6/plr-ubuntu18.gppkg
 
 - name: greenplumR-release
   type: gcs
