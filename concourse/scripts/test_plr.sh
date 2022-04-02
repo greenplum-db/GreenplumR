@@ -92,8 +92,8 @@ function install_libraries() {
       yum install -y R-${R_VERSION}-1-1.x86_64.rpm
       R=/opt/R/${R_VERSION}/bin/R
       Rscript=/opt/R/${R_VERSION}/bin/Rscript
-      # ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
-      # ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
+      ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
+      ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
       ;;
     ubuntu)
       apt update
