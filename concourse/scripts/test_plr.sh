@@ -87,7 +87,8 @@ function install_libraries() {
       # postgresql-devel is needed by RPostgreSQL
       yum install -y postgresql-devel
       # install R specific
-      curl -O https://cdn.rstudio.com/r/centos-8/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
+      LINUX_VERSION=$(rpm -E %{rhel})
+      curl -O https://cdn.rstudio.com/r/centos-${LINUX_VERSION}/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
       yum install -y R-${R_VERSION}-1-1.x86_64.rpm
       ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
       ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
@@ -108,6 +109,10 @@ function install_libraries() {
     ${CWDIR}/install_r_package.R ini
     # install r libraries from GitHub
     ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
+
+    if [ "$MODE" == "light" ] ; then
+        ${CWDIR}/install_r_package.R pdflatex 
+    fi
 }
 
 function install_libraries_full() {
