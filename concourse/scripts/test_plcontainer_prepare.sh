@@ -28,7 +28,7 @@ function install_libraries_min() {
     TEST_OS=$(determine_os)
     case $TEST_OS in
     centos)
-      yum install -y epel-release
+      # yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
       yum install -y R postgresql-devel
       ;;
