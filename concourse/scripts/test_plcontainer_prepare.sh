@@ -6,6 +6,8 @@ CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOP_DIR=${CWDIR}/../../../
 # light or full
 MODE=${MODE:=light}
+# for now we specific R version
+R_VERSION=3.6.1
 
 function determine_os() {
     if [ -f /etc/redhat-release ] ; then
@@ -28,9 +30,13 @@ function install_libraries_min() {
     TEST_OS=$(determine_os)
     case $TEST_OS in
     centos)
-      # yum install -y epel-release
+      yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
-      yum install -y R postgresql-devel
+      yum install -y postgresql-devel
+      LINUX_VERSION=$(rpm -E %{rhel})
+      curl -O https://cdn.rstudio.com/r/centos-${LINUX_VERSION}/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
+      yum install -y R-${R_VERSION}-1-1.x86_64.rpm
+      ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
       ;;
     ubuntu)
       apt update
@@ -49,6 +55,10 @@ function install_libraries_min() {
 
     # install r libraries from GitHub
     ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
+
+    if [ "$MODE" == "light" ] ; then
+        ${CWDIR}/install_r_package.R pdflatex
+    fi
 }
 
 function install_libraries_full() {
