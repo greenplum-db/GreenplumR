@@ -45,7 +45,7 @@ resources:
 - name: GreenplumR_src
   type: git
   source:
-    branch: master
+    branch: sa/6X_rhel8
     uri: https://github.com/greenplum-db/GreenplumR.git
 
 - name: bin_gpdb_centos7

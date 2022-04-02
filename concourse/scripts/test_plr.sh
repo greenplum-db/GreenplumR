@@ -90,12 +90,16 @@ function install_libraries() {
       LINUX_VERSION=$(rpm -E %{rhel})
       curl -O https://cdn.rstudio.com/r/centos-${LINUX_VERSION}/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
       yum install -y R-${R_VERSION}-1-1.x86_64.rpm
-      ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
-      ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
+      R=/opt/R/${R_VERSION}/bin/R
+      Rscript=/opt/R/${R_VERSION}/bin/Rscript
+      # ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
+      # ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
       ;;
     ubuntu)
       apt update
       DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev
+      R=R
+      Rscript=Rscript
       ;;
     *)
       echo "unknown TEST_OS = $TEST_OS"
@@ -103,12 +107,13 @@ function install_libraries() {
       ;;
     esac
     # install r libraries use remotes to download GitHub packages
-    Rscript ${CWDIR}/install_r_package.R remotes
-    Rscript ${CWDIR}/install_r_package.R testthat
-    Rscript ${CWDIR}/install_r_package.R shiny
-    Rscript ${CWDIR}/install_r_package.R ini
+    ${Rscript} ${CWDIR}/install_r_package.R remotes
+    ${Rscript} ${CWDIR}/install_r_package.R testthat
+    ${Rscript} ${CWDIR}/install_r_package.R shiny
+    ${Rscript} ${CWDIR}/install_r_package.R ini
+
     # install r libraries from GitHub
-    Rscript ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
+    ${Rscript} ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
 }
 
 function install_libraries_full() {
