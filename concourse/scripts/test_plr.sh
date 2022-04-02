@@ -48,7 +48,7 @@ pushd ${TOP_DIR}/GreenplumR_src
     echo "testthat::test_dir('tests', reporter = 'fail', stop_on_failure = TRUE)" >> test_script.R
     R --no-save < test_script.R
   else
-    R CMD check .
+    R CMD check . --no-manual
   fi
 popd
 EOF
@@ -103,16 +103,12 @@ function install_libraries() {
       ;;
     esac
     # install r libraries use remotes to download GitHub packages
-    ${CWDIR}/install_r_package.R remotes
-    ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R shiny
-    ${CWDIR}/install_r_package.R ini
+    Rscript ${CWDIR}/install_r_package.R remotes
+    Rscript ${CWDIR}/install_r_package.R testthat
+    Rscript ${CWDIR}/install_r_package.R shiny
+    Rscript ${CWDIR}/install_r_package.R ini
     # install r libraries from GitHub
-    ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
-
-    if [ "$MODE" == "light" ] ; then
-        ${CWDIR}/install_r_package.R pdflatex 
-    fi
+    Rscript ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
 }
 
 function install_libraries_full() {

@@ -15,7 +15,7 @@ pushd ~/GreenplumR_src
     echo "testthat::test_dir('tests', reporter = 'fail', stop_on_failure = TRUE)" >> test_script.R
     R --no-save < test_script.R
   else
-    R CMD check .
+    R CMD check . --no-manual
   fi
 popd
 EOF
