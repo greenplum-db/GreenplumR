@@ -8,6 +8,8 @@ TOP_DIR=${CWDIR}/../../../
 GPDB_CONCOURSE_DIR=${TOP_DIR}/gpdb_src/concourse/scripts
 # light or full
 MODE=${MODE:=light}
+# for now we specific R version
+R_VERSION=3.6.1
 
 source "${GPDB_CONCOURSE_DIR}/common.bash"
 
@@ -81,9 +83,14 @@ function install_libraries() {
     # install system libraries
     case $TEST_OS in
     centos)
-      # yum install -y epel-release
+      yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
-      yum install -y R postgresql-devel
+      yum install -y postgresql-devel
+      # install R specific
+      curl -O https://cdn.rstudio.com/r/centos-8/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
+      yum install -y R-${R_VERSION}-1-1.x86_64.rpm
+      ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
+      ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
       ;;
     ubuntu)
       apt update
