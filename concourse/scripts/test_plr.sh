@@ -98,7 +98,10 @@ function install_libraries() {
     ubuntu)
       apt update
       DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev \
-          openssh-client openssh-server iputils-ping net-tools iproute2
+          openssh-client openssh-server iputils-ping net-tools iproute2 locales
+      # update locale
+      locale-gen "en_US.UTF-8"
+      update-locale LC_ALL="en_US.UTF-8"
       R=R
       Rscript=Rscript
       ;;
@@ -157,7 +160,6 @@ function _main() {
     # for mirrorless test
     export WITH_MIRRORS=false
     export WITH_STANDBY=false
-    export LC_CTYPE="en_US.UTF-8"
     export BLDWRAP_POSTGRES_CONF_ADDONS=wal_level=minimal,max_wal_senders=0,gp_dispatch_keepalives_idle=30,gp_dispatch_keepalives_interval=10,gp_dispatch_keepalives_count=4
     time make_cluster
 
