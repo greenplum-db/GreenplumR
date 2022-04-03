@@ -2,7 +2,7 @@ groups:
 - name: All
   jobs:
   - test_plr_light_centos7
-    # - test_plr_light_rhel8
+  - test_plr_light_rhel8
   - test_plr_light_ubuntu18
   - greenplumR_release
 
@@ -54,12 +54,12 @@ resources:
     json_key: ((concourse-gcs-resources-service-account-key))
     versioned_file: 6X_STABLE/bin_gpdb_centos7/bin_gpdb.tar.gz
 
-      #- name: bin_gpdb_rhel8
-      #type: gcs
-      #source:
-      #bucket: {{gcs-bucket-intermediates}}
-      #json_key: {{concourse-gcs-resources-service-account-key}}
-      #versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_rhel8/bin_gpdb.tar.gz
+- name: bin_gpdb_rhel8
+  type: gcs
+  source:
+    bucket: {{gcs-bucket-intermediates}}
+    json_key: {{concourse-gcs-resources-service-account-key}}
+    versioned_file: ((gcs_gpdb_binary_folder))/bin_gpdb_rhel8/bin_gpdb.tar.gz
 
 - name: bin_gpdb_ubuntu18
   type: gcs
@@ -120,6 +120,22 @@ jobs:
   - task: test_greenplumr_plr
     file: GreenplumR_src/concourse/tasks/test_plr.yml
     image: ubuntu18-image-test
+    params:
+
+- name: test_plr_light_rhel8
+  plan:
+  - aggregate:
+    - get: gpdb_src
+    - get: GreenplumR_src
+      trigger: true
+    - get: bin_gpdb
+      resource: bin_gpdb_rhel8
+    - get: bin_plr
+      resource: bin_plr_rhel8
+    - get: rhel-image-dev-8
+  - task: test_greenplumr_plr_rhel8
+    file: GreenplumR_src/concourse/tasks/test_plr.yml
+    image: rhel-image-dev-8
     params:
 
 # Release GreenplumR GP Package
