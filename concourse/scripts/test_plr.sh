@@ -98,7 +98,7 @@ function install_libraries() {
     ubuntu)
       apt update
       DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev \
-          openssh-client openssh-server
+          openssh-client openssh-server iputils-ping
       R=R
       Rscript=Rscript
       ;;
