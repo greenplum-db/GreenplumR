@@ -82,6 +82,22 @@ resources:
     json_key: ((concourse-gcs-resources-service-account-key))
     versioned_file: plr/published/gpdb6/plr-ubuntu18.gppkg
 
+- name: bin_plr_rhel8
+  type: gcs
+  source:
+    bucket: {{gcs-bucket-intermediates}}
+    json_key: ((concourse-gcs-resources-service-account-key))
+    versioned_file: plr/published/gpdb6/plr-rhel8.gppkg
+
+- name: rhel-image-dev-8
+  type: registry-image
+  source:
+    repository: gcr.io/data-gpdb-private-images/gpdb6-rhel8-test
+    tag: latest
+    username: _json_key
+    password: ((container-registry-readonly-service-account-key))
+
+
 - name: greenplumR-release
   type: gcs
   source:
