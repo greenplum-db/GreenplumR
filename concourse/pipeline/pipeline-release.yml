@@ -103,7 +103,7 @@ resources:
   source:
     bucket: {{gcs-bucket-intermediates}}
     json_key: {{concourse-gcs-resources-service-account-key}}
-    versioned_file: plcontainer/published/master/plcontainer-concourse-ubuntu18.gppkg
+    regexp: pl-analysis-suite/released/gpdb6/greenplumR-(.*).tar.gz
 
 jobs:
 - name: test_plr_light_centos7

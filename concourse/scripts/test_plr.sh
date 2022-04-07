@@ -128,7 +128,7 @@ function install_libraries_full() {
     # no more packages need to install
     ;;
   ubuntu)
-    DEBIAN_FRONTEND=noninteractive apt install -y pkg-config \
+    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends apt-utils pkg-config \
         texlive-latex-base texlive-fonts-extra
     ;;
   esac
