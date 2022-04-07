@@ -8,7 +8,6 @@ groups:
   - test_plr_light_ubuntu18
   - test_plr_full_ubuntu18
   - test_plcontainer_centos7
-  - test_plcontainer_ubuntu18
 
 - name: plr
   jobs:
@@ -22,7 +21,6 @@ groups:
 - name: plcontainer
   jobs:
   - test_plcontainer_centos7
-  - test_plcontainer_ubuntu18
 
 #####################################################
 #################### RESOURCES ######################
@@ -31,6 +29,7 @@ ccp_create_params_anchor: &ccp_default_params
   action: create
   delete_on_failure: true
   generate_random_name: true
+  WITH_MIRRORS: false
   plugin_dir: ../../terraform.d/plugin-cache/linux_amd64
   terraform_source: ccp_src/google/
 
@@ -233,13 +232,6 @@ resources:
     json_key: {{concourse-gcs-resources-service-account-key}}
     versioned_file: plcontainer/published/master/plcontainer-concourse-centos7.gppkg
 
-- name: bin_plcontainer_ubuntu18
-  type: gcs
-  source:
-    bucket: {{gcs-bucket-intermediates}}
-    json_key: {{concourse-gcs-resources-service-account-key}}
-    versioned_file: plcontainer/published/master/plcontainer-concourse-ubuntu18.gppkg
-
 - name: plcontainer_gpdb_ubuntu18_build_lib
   type: gcs
   source:
@@ -371,6 +363,7 @@ jobs:
       <<: *ccp_default_params
       vars:
         <<: *ccp_default_vars
+        WITH_MIRRORS: false
         PLATFORM: centos7
         instance_type: n1-standard-4
         zone: {{google-zone}}
@@ -388,54 +381,6 @@ jobs:
       MODE: full
       platform: centos7
     image: centos-gpdb-dev-7
-    on_success:
-      <<: *ccp_destroy
-  ensure:
-    <<: *set_failed
-
-- name: test_plcontainer_ubuntu18
-  plan:
-  - aggregate:
-    - get: plcontainer_src
-    - get: GreenplumR_src
-      trigger: true
-    # this name is needed by ccp to gencluster
-    - get: gpdb_binary
-      resource: bin_gpdb_ubuntu18
-    - get: ccp_src
-    - get: terraform.d
-      params:
-        unpack: true
-    - get: ubuntu18-image-test
-    - get: plcontainer_rclient_docker_image
-      resource: plcontainer_docker_image_centos_r
-      trigger: true
-    - get: bin_plcontainer
-      resource: bin_plcontainer_ubuntu18
-      trigger: true
-    - get: plcontainer_gpdb_ubuntu18_build_lib
-  - put: terraform
-    params:
-      <<: *ccp_default_params
-      vars:
-        <<: *ccp_default_vars
-        PLATFORM: ubuntu18.04
-        instance_type: n1-standard-4
-        zone: {{google-zone}}
-        region: {{google-region}}
-  - task: gen_cluster
-    file: ccp_src/ci/tasks/gen_cluster.yml
-    params:
-      <<: *ccp_gen_cluster_default_params
-      PLATFORM: ubuntu18.04
-  - task: gpinitsystem
-    file: ccp_src/ci/tasks/gpinitsystem.yml
-  - task: test_greenplumr_plcontainer
-    file: GreenplumR_src/concourse/tasks/test_plcontainer.yml
-    params:
-      MODE: full
-      platform: ubuntu18
-    image: ubuntu18-image-test
     on_success:
       <<: *ccp_destroy
   ensure:
