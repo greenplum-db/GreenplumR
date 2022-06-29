@@ -7,7 +7,7 @@ TOP_DIR=${CWDIR}/../../../
 # light or full
 MODE=${MODE:=light}
 # for now we specific R version
-R_VERSION=3.6.1
+R_VERSION=4.1.2
 
 function determine_os() {
     if [ -f /etc/redhat-release ] ; then
