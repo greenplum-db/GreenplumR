@@ -9,7 +9,7 @@ GPDB_CONCOURSE_DIR=${TOP_DIR}/gpdb_src/concourse/scripts
 # light or full
 MODE=${MODE:=light}
 # for now we specific R version
-R_VERSION=3.6.1
+R_VERSION=4.1.2
 
 source "${GPDB_CONCOURSE_DIR}/common.bash"
 
