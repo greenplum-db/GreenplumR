@@ -8,6 +8,8 @@ TOP_DIR=${CWDIR}/../../../
 GPDB_CONCOURSE_DIR=${TOP_DIR}/gpdb_src/concourse/scripts
 # light or full
 MODE=${MODE:=light}
+# for now we specific R version
+R_VERSION=3.6.1
 
 source "${GPDB_CONCOURSE_DIR}/common.bash"
 
@@ -46,7 +48,7 @@ pushd ${TOP_DIR}/GreenplumR_src
     echo "testthat::test_dir('tests', reporter = 'fail', stop_on_failure = TRUE)" >> test_script.R
     R --no-save < test_script.R
   else
-    R CMD check .
+    R CMD check . --no-manual
   fi
 popd
 EOF
@@ -83,22 +85,39 @@ function install_libraries() {
     centos)
       yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
-      yum install -y R postgresql-devel
+      yum install -y postgresql-devel
+      # install R specific
+      LINUX_VERSION=$(rpm -E %{rhel})
+      curl -O https://cdn.rstudio.com/r/centos-${LINUX_VERSION}/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
+      yum install -y R-${R_VERSION}-1-1.x86_64.rpm
+      R=/opt/R/${R_VERSION}/bin/R
+      Rscript=/opt/R/${R_VERSION}/bin/Rscript
+      ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
+      ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
       ;;
     ubuntu)
       apt update
-      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev
+      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev \
+          openssh-client openssh-server iputils-ping net-tools iproute2 locales
+      # update locale
+      locale-gen "en_US.UTF-8"
+      update-locale LC_ALL="en_US.UTF-8"
+      R=R
+      Rscript=Rscript
       ;;
     *)
       echo "unknown TEST_OS = $TEST_OS"
       exit 1
       ;;
     esac
-    # install r libraries
-    ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R RPostgreSQL
-    ${CWDIR}/install_r_package.R shiny
-    ${CWDIR}/install_r_package.R ini
+    # install r libraries use remotes to download GitHub packages
+    ${Rscript} ${CWDIR}/install_r_package.R remotes
+    ${Rscript} ${CWDIR}/install_r_package.R testthat
+    ${Rscript} ${CWDIR}/install_r_package.R shiny
+    ${Rscript} ${CWDIR}/install_r_package.R ini
+
+    # install r libraries from GitHub
+    ${Rscript} ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
 }
 
 function install_libraries_full() {
@@ -109,7 +128,7 @@ function install_libraries_full() {
     # no more packages need to install
     ;;
   ubuntu)
-    DEBIAN_FRONTEND=noninteractive apt install -y pkg-config \
+    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends apt-utils pkg-config \
         texlive-latex-base texlive-fonts-extra
     ;;
   esac
@@ -137,6 +156,11 @@ function _main() {
     time install_libraries_${MODE}
     time install_gpdb
     time setup_gpadmin_user
+
+    # for mirrorless test
+    export WITH_MIRRORS=false
+    export WITH_STANDBY=false
+    export BLDWRAP_POSTGRES_CONF_ADDONS=wal_level=minimal,max_wal_senders=0,gp_dispatch_keepalives_idle=30,gp_dispatch_keepalives_interval=10,gp_dispatch_keepalives_count=4
     time make_cluster
 
     time test_run

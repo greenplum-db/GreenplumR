@@ -6,6 +6,8 @@ CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOP_DIR=${CWDIR}/../../../
 # light or full
 MODE=${MODE:=light}
+# for now we specific R version
+R_VERSION=3.6.1
 
 function determine_os() {
     if [ -f /etc/redhat-release ] ; then
@@ -30,11 +32,20 @@ function install_libraries_min() {
     centos)
       yum install -y epel-release
       # postgresql-devel is needed by RPostgreSQL
-      yum install -y R postgresql-devel
+      yum install -y postgresql-devel
+      LINUX_VERSION=$(rpm -E %{rhel})
+      curl -O https://cdn.rstudio.com/r/centos-${LINUX_VERSION}/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
+      yum install -y R-${R_VERSION}-1-1.x86_64.rpm
+      R=/opt/R/${R_VERSION}/bin/R
+      Rscript=/opt/R/${R_VERSION}/bin/Rscript
+      ln -s /opt/R/${R_VERSION}/bin/R /usr/local/bin/R
+      ln -s /opt/R/${R_VERSION}/bin/Rscript /usr/local/bin/Rscript
       ;;
     ubuntu)
       apt update
-      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev
+      DEBIAN_FRONTEND=noninteractive apt install -y r-base libpq-dev build-essential libcurl4-gnutls-dev libxml2-dev libssl-dev
+      R=R
+      Rscript=Rscript
       ;;
     *)
       echo "unknown TEST_OS = $TEST_OS"
@@ -42,10 +53,13 @@ function install_libraries_min() {
       ;;
     esac
     # install r libraries
-    ${CWDIR}/install_r_package.R testthat
-    ${CWDIR}/install_r_package.R RPostgreSQL
-    ${CWDIR}/install_r_package.R shiny
-    ${CWDIR}/install_r_package.R ini
+    ${Rscript} ${CWDIR}/install_r_package.R remotes
+    ${Rscript} ${CWDIR}/install_r_package.R testthat
+    ${Rscript} ${CWDIR}/install_r_package.R shiny
+    ${Rscript} ${CWDIR}/install_r_package.R ini
+
+    # install r libraries from GitHub
+    ${Rscript} ${CWDIR}/install_r_package_github.R tomoakin/RPostgreSQL/RPostgreSQL
 }
 
 function install_libraries_full() {
@@ -56,7 +70,7 @@ function install_libraries_full() {
     # no more packages need to install
     ;;
   ubuntu)
-    DEBIAN_FRONTEND=noninteractive apt install -y pkg-config \
+    DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends apt-utils pkg-config \
         texlive-latex-base texlive-fonts-extra
     ;;
   esac
